@@ -1,0 +1,1 @@
+export { ParagraphAlignEditor } from './ParagraphAlignEditor';

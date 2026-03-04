@@ -1,0 +1,142 @@
+/**
+ * SaveExpressionPopup 组件样式
+ */
+
+.save-expression-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+
+.save-expression-popup {
+  position: fixed;
+  z-index: 1000;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 320px;
+  max-width: calc(100vw - 32px);
+}
+
+.save-expression-popup__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.save-expression-popup__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.save-expression-popup__close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.save-expression-popup__close:hover {
+  color: #333;
+}
+
+.save-expression-popup__form {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.save-expression-popup__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.save-expression-popup__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #666;
+}
+
+.save-expression-popup__input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.save-expression-popup__input:focus {
+  outline: none;
+  border-color: #4a90d9;
+}
+
+.save-expression-popup__textarea {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.save-expression-popup__textarea:focus {
+  outline: none;
+  border-color: #4a90d9;
+}
+
+.save-expression-popup__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.save-expression-popup__cancel {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.save-expression-popup__cancel:hover {
+  background: #f5f5f5;
+}
+
+.save-expression-popup__save {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #4a90d9;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.save-expression-popup__save:hover:not(:disabled) {
+  background: #3a7bc8;
+}
+
+.save-expression-popup__save:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}

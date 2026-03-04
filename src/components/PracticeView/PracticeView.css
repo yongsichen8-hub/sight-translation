@@ -1,0 +1,191 @@
+/* ── 外层容器 ── */
+.pv {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.pv__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  color: #6b7280;
+}
+
+/* ── 固定右上角工具栏 ── */
+.pv__toolbar {
+  position: fixed;
+  top: 70px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.pv__toolbar-tabs {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.pv__tab {
+  padding: 6px 16px;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+
+.pv__tab:hover:not(:disabled) {
+  color: #374151;
+}
+
+.pv__tab--active {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pv__tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pv__btn {
+  padding: 6px 14px;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pv__btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.pv__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pv__btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: #6b7280;
+}
+
+.pv__btn--ghost:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* ── 双栏主体 ── */
+.pv__body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.pv__col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.pv__col:last-child {
+  border-right: none;
+}
+
+.pv__col-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+/* ── 编辑模式：textarea ── */
+.pv__editor {
+  position: absolute;
+  top: 36px; /* col-label 高度 */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px 24px;
+  font-size: 1rem;
+  line-height: 1.8;
+  font-family: inherit;
+  border: none;
+  outline: none;
+  resize: none;
+  background: #fff;
+  color: #1f2937;
+  overflow-y: auto;
+}
+
+.pv__editor::placeholder {
+  color: #d1d5db;
+}
+
+/* ── 练习模式：只读内容 ── */
+.pv__content {
+  position: absolute;
+  top: 36px; /* col-label 高度 */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px 24px;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #1f2937;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+  cursor: text;
+}
+
+.pv__content::selection,
+.pv__content *::selection {
+  background: #fef08a;
+}
+
+.pv__empty-text {
+  color: #d1d5db;
+  font-style: italic;
+}

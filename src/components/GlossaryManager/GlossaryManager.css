@@ -1,0 +1,289 @@
+/**
+ * GlossaryManager 组件样式
+ */
+
+.glossary-manager {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.glossary-manager__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.glossary-manager__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.glossary-manager__nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.glossary-manager__filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.glossary-manager__search-input {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 300px;
+  max-width: 100%;
+}
+
+.glossary-manager__search-input:focus {
+  outline: none;
+  border-color: #4a90d9;
+}
+
+.glossary-manager__stats {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.glossary-manager__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.glossary-manager__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.glossary-manager__table th,
+.glossary-manager__table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.glossary-manager__table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+.glossary-manager__table tr:last-child td {
+  border-bottom: none;
+}
+
+.glossary-manager__table tr:hover {
+  background: #f8f9fa;
+}
+
+.glossary-manager__notes {
+  color: #666;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glossary-manager__actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 4px;
+}
+
+.glossary-manager__btn {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+
+.glossary-manager__btn:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.glossary-manager__btn--danger {
+  color: #d32f2f;
+  border-color: #ffcdd2;
+}
+
+.glossary-manager__btn--danger:hover {
+  background: #ffebee;
+  border-color: #ef9a9a;
+}
+
+.glossary-manager__btn--save {
+  background: #4a90d9;
+  color: #fff;
+  border-color: #4a90d9;
+}
+
+.glossary-manager__btn--save:hover {
+  background: #3a7bc8;
+}
+
+.glossary-manager__btn--cancel {
+  color: #666;
+}
+
+.glossary-manager__edit-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #4a90d9;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.glossary-manager__edit-input:focus {
+  outline: none;
+}
+
+.glossary-manager__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.glossary-manager__empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.glossary-manager__empty-text {
+  color: #666;
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+}
+
+.delete-confirm__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.delete-confirm__message {
+  color: #333;
+}
+
+.delete-confirm__warning {
+  color: #d32f2f;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+
+/* AI 解释按钮 */
+.glossary-manager__btn--ai {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-color: #667eea;
+}
+
+.glossary-manager__btn--ai:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  border-color: #5a67d8;
+}
+
+/* AI 解释弹窗内容 */
+.glossary-manager__explanation {
+  min-height: 150px;
+}
+
+.glossary-manager__explanation-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.glossary-manager__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.glossary-manager__explanation-section {
+  margin-bottom: 1.5rem;
+}
+
+.glossary-manager__explanation-section:last-child {
+  margin-bottom: 0;
+}
+
+.glossary-manager__explanation-section h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #667eea;
+  margin: 0 0 0.5rem 0;
+}
+
+.glossary-manager__explanation-section p {
+  margin: 0;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* API 配置弹窗 */
+.glossary-manager__api-config {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.glossary-manager__config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.glossary-manager__config-field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.glossary-manager__config-field input,
+.glossary-manager__config-field select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.glossary-manager__config-field input:focus,
+.glossary-manager__config-field select:focus {
+  outline: none;
+  border-color: #667eea;
+}

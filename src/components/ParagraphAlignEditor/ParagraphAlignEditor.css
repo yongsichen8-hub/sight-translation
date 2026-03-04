@@ -1,0 +1,297 @@
+.align-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── 顶部工具栏 ── */
+.align-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.align-editor__title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.align-editor__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.align-editor__subtitle {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.align-editor__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── 双栏主体 ── */
+.align-editor__body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+.align-editor__col {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid #e5e7eb;
+}
+
+.align-editor__col:last-child {
+  border-right: none;
+}
+
+.align-editor__col--reference {
+  background: #fafafa;
+}
+
+.align-editor__col-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  flex-shrink: 0;
+}
+
+.align-editor__col-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 40px;
+}
+
+/* ── 段落行 ── */
+.align-editor__pair-row {
+  position: relative;
+}
+
+.align-editor__pair-row--practicing {
+  background: #f0f7ff;
+  border-radius: 6px;
+  margin: 2px 0;
+}
+
+/* ── 段落文本 ── */
+.align-editor__para {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 4px 8px;
+  cursor: text;
+  user-select: text;
+}
+
+.align-editor__para:hover {
+  background: rgba(59, 130, 246, 0.04);
+  border-radius: 4px;
+}
+
+.align-editor__para--reference {
+  cursor: default;
+  color: #374151;
+}
+
+.align-editor__para-index {
+  flex-shrink: 0;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.align-editor__para-text {
+  flex: 1;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: #111827;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.align-editor__empty {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* ── 段落操作按钮区 ── */
+.align-editor__para-actions {
+  padding: 0 4px 10px 30px;
+}
+
+.align-editor__practice-btn {
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.align-editor__practice-btn:hover {
+  background: #2563eb;
+}
+
+/* ── 内联练习区 ── */
+.align-editor__practice-zone {
+  padding: 0 4px 12px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.align-editor__show-btn {
+  align-self: flex-start;
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+  border: 1px solid #3b82f6;
+  background: transparent;
+  color: #3b82f6;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.align-editor__show-btn:hover,
+.align-editor__show-btn--active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.align-editor__translation {
+  padding: 10px 14px;
+  background: #eff6ff;
+  border-left: 3px solid #3b82f6;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: #1e3a5f;
+  user-select: text;
+  white-space: pre-wrap;
+  word-break: break-word;
+  animation: slideDown 0.18s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 分隔线 ── */
+.align-editor__divider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+.align-editor__divider--passive {
+  padding: 3px 0;
+}
+
+.align-editor__divider-line {
+  flex: 1;
+  height: 1px;
+  background: #d1d5db;
+}
+
+.align-editor__divider-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.align-editor__divider-btn:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* ── 插入分隔线提示 ── */
+.align-editor__split-hint {
+  position: fixed;
+  z-index: 200;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.align-editor__split-btn {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.align-editor__split-btn:hover {
+  background: #2563eb;
+}
+
+.align-editor__split-cancel {
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  background: none;
+  color: #6b7280;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.align-editor__split-cancel:hover {
+  color: #374151;
+}

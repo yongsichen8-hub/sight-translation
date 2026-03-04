@@ -1,0 +1,171 @@
+/**
+ * FlashcardReview 组件样式
+ */
+
+.flashcard-review {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.flashcard-review__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.flashcard-review__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.flashcard-review__nav {
+  display: flex;
+  gap: 8px;
+}
+
+/* 统计信息 */
+.flashcard-review__stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 12px;
+}
+
+.flashcard-review__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.flashcard-review__stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.flashcard-review__stat-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* 进度条 */
+.flashcard-review__progress {
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.flashcard-review__progress-bar {
+  height: 100%;
+  background-color: #10b981;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* 空状态 */
+.flashcard-review__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.flashcard-review__empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.flashcard-review__empty-text {
+  color: #6b7280;
+  font-size: 18px;
+  margin: 0 0 24px;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.flashcard-review__empty-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .flashcard-review__title {
+    color: #f9fafb;
+  }
+
+  .flashcard-review__stats {
+    background-color: #1f2937;
+  }
+
+  .flashcard-review__stat-value {
+    color: #60a5fa;
+  }
+
+  .flashcard-review__stat-label {
+    color: #9ca3af;
+  }
+
+  .flashcard-review__progress {
+    background-color: #374151;
+  }
+
+  .flashcard-review__empty-text {
+    color: #9ca3af;
+  }
+}
+
+/* 响应式适配 */
+@media (max-width: 640px) {
+  .flashcard-review {
+    padding: 16px;
+  }
+
+  .flashcard-review__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .flashcard-review__nav {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .flashcard-review__stats {
+    gap: 16px;
+    padding: 12px;
+  }
+
+  .flashcard-review__stat-value {
+    font-size: 24px;
+  }
+
+  .flashcard-review__stat-label {
+    font-size: 12px;
+  }
+
+  .flashcard-review__empty-icon {
+    font-size: 48px;
+  }
+
+  .flashcard-review__empty-text {
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,134 @@
+/**
+ * FileUpload 组件样式
+ */
+
+.file-upload {
+  margin-bottom: 1rem;
+}
+
+.file-upload__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.file-upload__required {
+  color: #d32f2f;
+  margin-left: 0.25rem;
+}
+
+.file-upload__dropzone {
+  position: relative;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.file-upload__dropzone:hover {
+  border-color: #4a90d9;
+  background-color: #f8fafc;
+}
+
+.file-upload__dropzone--dragover {
+  border-color: #4a90d9;
+  background-color: #e8f4fd;
+}
+
+.file-upload__dropzone--has-file {
+  border-style: solid;
+  border-color: #4caf50;
+  background-color: #f1f8e9;
+}
+
+.file-upload__dropzone--error {
+  border-color: #d32f2f;
+  background-color: #ffebee;
+}
+
+.file-upload__input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-upload__content {
+  pointer-events: none;
+}
+
+.file-upload__icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.7;
+}
+
+.file-upload__text {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+}
+
+.file-upload__hint {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+.file-upload__file-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.file-upload__file-name {
+  font-weight: 500;
+  color: #333;
+  word-break: break-all;
+}
+
+.file-upload__file-size {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.file-upload__clear {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  pointer-events: auto;
+}
+
+.file-upload__clear:hover {
+  background-color: rgba(211, 47, 47, 0.1);
+}
+
+.file-upload__error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #ffebee;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #d32f2f;
+}
+
+.file-upload__error-icon {
+  flex-shrink: 0;
+}
