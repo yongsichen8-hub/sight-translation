@@ -245,9 +245,11 @@ export class AuthService {
       name: user.name,
     };
     
-    return jwt.sign(payload, config.jwt.secret, {
+    const options: jwt.SignOptions = {
       expiresIn: config.jwt.expiresIn,
-    });
+    };
+    
+    return jwt.sign(payload, config.jwt.secret, options);
   }
 
   /**
