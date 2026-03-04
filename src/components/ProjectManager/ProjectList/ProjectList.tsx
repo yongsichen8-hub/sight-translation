@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Modal, Loading, Toast } from '../../common';
-import { projectManager } from '../../../services/ProjectManager';
+import { dataService } from '../../../services/DataService';
 import { useAppActions } from '../../../context/useAppActions';
 import type { Project } from '../../../types';
 import './ProjectList.css';
@@ -39,7 +39,7 @@ export function ProjectList({ onCreateClick }: ProjectListProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await projectManager.getProjects();
+      const data = await dataService.getProjects();
       setProjects(data);
     } catch (err) {
       setError('加载项目列表失败，请刷新页面重试');
@@ -76,7 +76,7 @@ export function ProjectList({ onCreateClick }: ProjectListProps) {
 
     try {
       setDeleting(true);
-      await projectManager.deleteProject(deleteTarget.id);
+      await dataService.deleteProject(deleteTarget.id);
       setProjects((prev) => prev.filter((p) => p.id !== deleteTarget.id));
       setToast({ message: `项目 "${deleteTarget.name}" 已删除`, type: 'success' });
       setDeleteTarget(null);

@@ -7,8 +7,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Loading, Toast } from '../common';
 import { FlashcardCard } from './FlashcardCard.tsx';
-import { flashcardGenerator } from '../../services/FlashcardGenerator';
-import { expressionCollector } from '../../services/ExpressionCollector';
+import { dataService } from '../../services/DataService';
 import { useAppActions } from '../../context/useAppActions';
 import type { Flashcard, Expression } from '../../types';
 import './FlashcardReview.css';
@@ -33,8 +32,8 @@ export function FlashcardReview(): React.ReactElement {
       setLoading(true);
       setError(null);
 
-      const flashcards = await flashcardGenerator.getDueCards();
-      const expressions = await expressionCollector.getExpressions();
+      const flashcards = await dataService.getDueFlashcards();
+      const expressions = await dataService.getExpressions();
       const expressionMap = new Map(expressions.map(e => [e.id, e]));
 
       const cardsWithExpressions: FlashcardWithExpression[] = [];
@@ -65,7 +64,7 @@ export function FlashcardReview(): React.ReactElement {
 
     try {
       setReviewing(true);
-      await flashcardGenerator.recordReview(currentCard.flashcard.id, remembered);
+      await dataService.recordReview(currentCard.flashcard.id, remembered);
       setToast({
         message: remembered ? '太棒了！🎉' : '没关系，明天再复习 💪',
         type: 'success',

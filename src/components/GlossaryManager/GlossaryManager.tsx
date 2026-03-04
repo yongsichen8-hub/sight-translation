@@ -6,8 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { Button, Modal, Loading, Toast } from '../common';
-import { expressionCollector } from '../../services/ExpressionCollector';
-import { flashcardGenerator } from '../../services/FlashcardGenerator';
+import { dataService } from '../../services/DataService';
 import { createTermExplainer, type TermExplanation } from '../../services/TermExplainer';
 import { useAppActions } from '../../context/useAppActions';
 import { API_PROVIDERS } from '../../types/models';
@@ -46,7 +45,7 @@ export function GlossaryManager(): React.ReactElement {
     try {
       setLoading(true);
       setError(null);
-      const data = await expressionCollector.getExpressions();
+      const data = await dataService.getExpressions();
       setExpressions(data);
     } catch (err) {
       setError('加载术语库失败，请刷新页面重试');
@@ -92,7 +91,7 @@ export function GlossaryManager(): React.ReactElement {
   const handleSaveEdit = useCallback(async () => {
     if (!editingId) return;
     try {
-      await expressionCollector.updateExpression(editingId, editValues);
+      await dataService.updateExpression(editingId, editValues);
       setExpressions((prev) =>
         prev.map((expr) =>
           expr.id === editingId
@@ -119,7 +118,7 @@ export function GlossaryManager(): React.ReactElement {
     if (!deleteTarget) return;
     try {
       setDeleting(true);
-      await expressionCollector.deleteExpression(deleteTarget.id);
+      await dataService.deleteExpression(deleteTarget.id);
       setExpressions((prev) => prev.filter((expr) => expr.id !== deleteTarget.id));
       setToast({ message: '术语已删除', type: 'success' });
       setDeleteTarget(null);
@@ -132,7 +131,7 @@ export function GlossaryManager(): React.ReactElement {
 
   const handleAddToFlashcard = useCallback(async (expr: Expression) => {
     try {
-      await flashcardGenerator.scheduleExpression(expr.id);
+      await dataService.scheduleExpression(expr.id);
       setToast({ message: '已添加到复习卡片', type: 'success' });
     } catch (err) {
       if (err instanceof Error && err.message.includes('already')) {
@@ -210,7 +209,7 @@ export function GlossaryManager(): React.ReactElement {
         }
 
         try {
-          await expressionCollector.importExpression({
+          await dataService.importExpression({
             chinese: chinese.trim(),
             english: english.trim(),
             notes: notes.trim(),

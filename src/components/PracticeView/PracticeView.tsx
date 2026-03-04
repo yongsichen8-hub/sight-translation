@@ -9,8 +9,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAppState } from '../../context/AppContext';
 import { useAppActions } from '../../context/useAppActions';
-import { expressionCollector } from '../../services/ExpressionCollector';
-import { projectManager } from '../../services/ProjectManager';
+import { dataService } from '../../services/DataService';
 import { SaveExpressionPopup } from './SaveExpressionPopup';
 import type { ParagraphPair } from '../../types';
 import './PracticeView.css';
@@ -109,7 +108,7 @@ export function PracticeView() {
       try {
         setSaving(true);
         const pairs = buildPairs();
-        await projectManager.updateParagraphPairs(currentProject.id, pairs);
+        await dataService.updateProjectParagraphs(currentProject.id, pairs);
         showSuccess('已保存');
       } catch {
         showError('保存失败');
@@ -133,7 +132,7 @@ export function PracticeView() {
     if (currentProject && viewMode === 'edit') {
       try {
         const pairs = buildPairs();
-        await projectManager.updateParagraphPairs(currentProject.id, pairs);
+        await dataService.updateProjectParagraphs(currentProject.id, pairs);
       } catch { /* 静默 */ }
     }
     exitPractice();
@@ -165,7 +164,7 @@ export function PracticeView() {
     if (!currentProject) return;
     setSavingExpression(true);
     try {
-      await expressionCollector.saveExpression({ projectId: currentProject.id, ...data });
+      await dataService.saveExpression({ projectId: currentProject.id, ...data });
       showSuccess('术语已保存');
       setSelectedTextState(null);
       window.getSelection()?.removeAllRanges();

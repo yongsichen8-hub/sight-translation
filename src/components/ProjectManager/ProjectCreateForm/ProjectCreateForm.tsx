@@ -6,7 +6,7 @@
 import { useState, useCallback, useId } from 'react';
 import { Button, Toast } from '../../common';
 import { FileUpload } from '../FileUpload';
-import { projectManager } from '../../../services/ProjectManager';
+import { dataService } from '../../../services/DataService';
 import { getFileParseErrorMessage, API_PROVIDERS } from '../../../types';
 import type { ProjectInput, APIProvider, OpenAIConfig } from '../../../types';
 import { useAppState } from '../../../context/AppContext';
@@ -141,7 +141,7 @@ export function ProjectCreateForm({ onBack, onSuccess }: ProjectCreateFormProps)
           break;
       }
 
-      await projectManager.createProject(input, config);
+      await dataService.createProject(input, config);
       setToast({ message: '项目创建成功！', type: 'success' });
       setTimeout(onSuccess, 1000);
     } catch (error) {

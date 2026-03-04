@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { apiClient, AuthUser } from '../services/ApiClient';
+import { setAuthState } from '../services/DataService';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -28,8 +29,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       const currentUser = await apiClient.getCurrentUser();
       setUser(currentUser);
+      setAuthState(!!currentUser); // 同步认证状态到数据服务
     } catch {
       setUser(null);
+      setAuthState(false);
     } finally {
       setIsLoading(false);
     }
@@ -48,6 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await apiClient.logout();
       setUser(null);
+      setAuthState(false); // 同步认证状态到数据服务
     } catch (error) {
       console.error('退出登录失败:', error);
     }
