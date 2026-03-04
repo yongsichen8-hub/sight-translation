@@ -1,10 +1,14 @@
 import { useEffect, useCallback } from 'react';
 import { AppProvider, useAppState } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { useAppActions } from './context/useAppActions';
 import { ProjectManager } from './components/ProjectManager';
 import { PracticeView } from './components/PracticeView';
 import { GlossaryManager } from './components/GlossaryManager';
 import { FlashcardReview } from './components/FlashcardReview';
+import { LoginPage } from './components/LoginPage';
+import { UserMenu } from './components/UserMenu';
+import { MigrationDialog } from './components/MigrationDialog';
 import { Toast, Button } from './components/common';
 import { initializeDatabase } from './db';
 import './App.css';
@@ -40,6 +44,9 @@ function AppNav() {
         >
           复习
         </button>
+      </div>
+      <div className="app-nav__user">
+        <UserMenu />
       </div>
     </nav>
   );
@@ -166,17 +173,54 @@ function GlobalToast() {
 }
 
 /**
- * 应用根组件
+ * 认证包装组件 - 根据登录状态显示不同内容
  */
-function App() {
+function AuthenticatedApp() {
+  const { isAuthenticated, isLoading, isFirstLogin, setFirstLoginComplete } = useAuth();
+
+  // 认证状态加载中
+  if (isLoading) {
+    return (
+      <div className="app">
+        <div className="app-loading" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="app-loading__spinner" />
+          <p className="app-loading__text">正在检查登录状态...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 未登录，显示登录页
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  // 已登录，显示主应用
   return (
     <AppProvider>
       <div className="app">
         <AppNav />
         <AppContent />
         <GlobalToast />
+        {/* 首次登录时显示数据迁移对话框 */}
+        <MigrationDialog
+          visible={isFirstLogin}
+          onClose={setFirstLoginComplete}
+          onComplete={setFirstLoginComplete}
+        />
       </div>
     </AppProvider>
+  );
+}
+
+/**
+ * 应用根组件
+ */
+function App() {
+  return (
+    <AuthProvider>
+      <AuthenticatedApp />
+    </AuthProvider>
   );
 }
 

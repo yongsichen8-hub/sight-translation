@@ -1,0 +1,83 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.login-container {
+  background: white;
+  border-radius: 16px;
+  padding: 48px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.login-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  color: #333;
+}
+
+.login-header p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.login-content {
+  margin: 40px 0;
+}
+
+.login-description {
+  color: #666;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.feishu-login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: #3370ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.feishu-login-btn:hover:not(:disabled) {
+  background: #2860e0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(51, 112, 255, 0.4);
+}
+
+.feishu-login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.feishu-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.login-footer {
+  margin-top: 24px;
+}
+
+.login-footer p {
+  color: #999;
+  font-size: 12px;
+  margin: 0;
+}
