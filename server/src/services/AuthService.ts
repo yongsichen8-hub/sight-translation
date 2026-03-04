@@ -245,11 +245,12 @@ export class AuthService {
       name: user.name,
     };
     
-    const options: jwt.SignOptions = {
-      expiresIn: config.jwt.expiresIn,
-    };
+    // 7 天过期时间（秒）
+    const expiresInSeconds = 7 * 24 * 60 * 60;
     
-    return jwt.sign(payload, config.jwt.secret, options);
+    return jwt.sign(payload, config.jwt.secret, {
+      expiresIn: expiresInSeconds,
+    });
   }
 
   /**
