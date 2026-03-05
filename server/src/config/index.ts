@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-// 加载环境变量
-dotenv.config();
+// 加载环境变量 - 使用 __dirname 确保找到正确的 .env 文件
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 export const config = {
   // 服务器配置

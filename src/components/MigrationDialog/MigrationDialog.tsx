@@ -54,6 +54,14 @@ export const MigrationDialog: React.FC<MigrationDialogProps> = ({
       };
 
       setLocalStats(stats);
+
+      // 没有本地数据时直接关闭，不显示弹窗
+      const hasData = stats.projects > 0 || stats.expressions > 0 || stats.flashcards > 0 || stats.reviewRecords > 0;
+      if (!hasData) {
+        onClose();
+        return;
+      }
+
       setStatus('ready');
     } catch (err) {
       console.error('检查本地数据失败:', err);

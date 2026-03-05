@@ -1,0 +1,169 @@
+/* ===== CSS Custom Properties (Theme Variables) ===== */
+:root {
+  /* Colors */
+  --color-primary: #1677ff;
+  --color-primary-hover: #4096ff;
+  --color-primary-light: #a0c4ff;
+  --color-danger: #ff4d4f;
+  --color-danger-bg: #fff2f0;
+  --color-danger-border: #ffccc7;
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-text: #333;
+  --color-text-secondary: #666;
+  --color-text-muted: #999;
+  --color-heading: #1a1a1a;
+  --color-bg: #f5f5f5;
+  --color-bg-card: #fff;
+  --color-bg-section: #fafafa;
+  --color-border: #e8e8e8;
+  --color-border-light: #f0f0f0;
+  --color-border-input: #d9d9d9;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 15px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 28px;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+}
+
+/* ===== Reset & Base ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+/* ===== Unified Form Elements ===== */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-primary);
+}
+
+/* ===== Unified Button Base ===== */
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* ===== Unified Table Base ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+}
+
+table th,
+table td {
+  padding: 10px var(--spacing-lg);
+  text-align: left;
+  font-size: var(--font-size-base);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+table th {
+  background: var(--color-bg-section);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+table tbody tr:hover {
+  background: #f5f7fa;
+}
+
+/* ===== Responsive: Stack table on small screens ===== */
+@media (max-width: 640px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+  }
+
+  tbody td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: right;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  tbody td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  tbody td:last-child {
+    border-bottom: none;
+  }
+}

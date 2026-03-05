@@ -11,6 +11,8 @@ import { useAppState } from '../../context/AppContext';
 import { useAppActions } from '../../context/useAppActions';
 import { dataService } from '../../services/DataService';
 import { SaveExpressionPopup } from './SaveExpressionPopup';
+import { HighlightedText } from './HighlightedText';
+import { useProjectExpressions } from './useProjectExpressions';
 import type { ParagraphPair } from '../../types';
 import './PracticeView.css';
 
@@ -39,6 +41,9 @@ export function PracticeView() {
   
   const [saving, setSaving] = useState(false);
   const hasInitialized = useRef(false);
+
+  // 高亮关键词
+  const { chineseKeywords, englishKeywords, refresh: refreshExpressions } = useProjectExpressions(currentProject?.id);
   
   // DOM refs for scroll position preservation
   const leftColRef = useRef<HTMLTextAreaElement | HTMLDivElement | null>(null);
@@ -166,6 +171,7 @@ export function PracticeView() {
     try {
       await dataService.saveExpression({ projectId: currentProject.id, ...data });
       showSuccess('术语已保存');
+      await refreshExpressions();
       setSelectedTextState(null);
       window.getSelection()?.removeAllRanges();
     } catch (error) {
@@ -173,7 +179,7 @@ export function PracticeView() {
     } finally {
       setSavingExpression(false);
     }
-  }, [currentProject, showSuccess, showError]);
+  }, [currentProject, showSuccess, showError, refreshExpressions]);
 
   if (!currentProject) {
     return (
@@ -230,7 +236,7 @@ export function PracticeView() {
               className="pv__content"
               onMouseUp={() => handleMouseUp('zh')}
             >
-              {chineseText || <span className="pv__empty-text">（无内容）</span>}
+              {chineseText ? <HighlightedText text={chineseText} keywords={chineseKeywords} /> : <span className="pv__empty-text">（无内容）</span>}
             </div>
           )}
         </div>
@@ -252,7 +258,7 @@ export function PracticeView() {
               className="pv__content"
               onMouseUp={() => handleMouseUp('en')}
             >
-              {englishText || <span className="pv__empty-text">（无内容）</span>}
+              {englishText ? <HighlightedText text={englishText} keywords={englishKeywords} /> : <span className="pv__empty-text">（无内容）</span>}
             </div>
           )}
         </div>

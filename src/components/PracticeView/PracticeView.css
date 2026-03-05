@@ -189,3 +189,10 @@
   color: #d1d5db;
   font-style: italic;
 }
+
+/* 收藏表达高亮 */
+.pv__content mark {
+  background-color: #FFF9C4;
+  padding: 0;
+  border-radius: 2px;
+}

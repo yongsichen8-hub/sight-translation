@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { apiClient, AuthUser } from '../services/ApiClient';
 import { setAuthState } from '../services/DataService';
+import { db } from '../db';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -78,7 +79,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsLoading(true);
           const authUser = await apiClient.handleCallback(code, state);
           setUser(authUser);
-          setIsFirstLogin(true); // 标记为首次登录，触发数据迁移检查
+          
+          // 只有本地有数据时才触发迁移提醒
+          const localProjects = await db.projects.count();
+          const localExpressions = await db.expressions.count();
+          const localFlashcards = await db.flashcards.count();
+          const hasLocalData = localProjects > 0 || localExpressions > 0 || localFlashcards > 0;
+          setIsFirstLogin(hasLocalData);
+          
           // 清除 URL 参数
           window.history.replaceState({}, '', '/');
         } catch (error) {

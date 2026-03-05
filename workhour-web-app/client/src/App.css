@@ -1,0 +1,120 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--spacing-2xl);
+  height: 56px;
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-left {
+  display: flex;
+  gap: var(--spacing-2xl);
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  padding: var(--spacing-xs) 0;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--color-primary);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.nav-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.nav-username {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.nav-logout {
+  background: none;
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.nav-logout:hover {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-2xl);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+}
+
+.error-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: var(--font-size-lg);
+  color: var(--color-danger);
+}
+
+.page {
+  padding: var(--spacing-2xl);
+}
+
+/* ===== Responsive Navbar ===== */
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0 var(--spacing-md);
+    height: 48px;
+  }
+
+  .nav-left {
+    gap: var(--spacing-lg);
+  }
+
+  .nav-link {
+    font-size: var(--font-size-sm);
+  }
+
+  .nav-username {
+    display: none;
+  }
+
+  .nav-avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .nav-logout {
+    padding: 2px var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+
+  .main-content {
+    padding: var(--spacing-lg);
+  }
+}

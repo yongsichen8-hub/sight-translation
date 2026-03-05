@@ -2,7 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'sight-api',
-      script: './server/dist/index.js',
+      cwd: './server',
+      script: './dist/index.js',
       env: {
         NODE_ENV: 'production',
         PORT: 3001
@@ -18,7 +19,7 @@ module.exports = {
     {
       name: 'sight-frontend',
       script: 'npx',
-      args: 'serve dist -l 3000',
+      args: 'serve dist -l 3000 --single',
       env: {
         NODE_ENV: 'production'
       },
