@@ -4,6 +4,7 @@
  * - 右上角固定工具栏：编辑/练习模式切换 + 退出
  * - 编辑模式：两栏都是 textarea，直接编辑，Enter 分段，Backspace 合并
  * - 练习模式：两栏只读，划词可收藏术语
+ * - 每栏独立进度百分比显示 + 点击跳转
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -31,29 +32,27 @@ export function PracticeView() {
   const { currentProject } = state;
 
   const [viewMode, setViewMode] = useState<ViewMode>('practice');
-  
-  // 编辑模式下的文本（整段文本，用换行符分隔段落）
   const [chineseText, setChineseText] = useState('');
   const [englishText, setEnglishText] = useState('');
-  
-  // 划词收藏
   const [selectedTextState, setSelectedTextState] = useState<SelectedTextState | null>(null);
   const [savingExpression, setSavingExpression] = useState(false);
-  
   const [saving, setSaving] = useState(false);
   const hasInitialized = useRef(false);
   const [contentReady, setContentReady] = useState(false);
-  const [scrollPercent, setScrollPercent] = useState(0);
-  
-  // 跳转输入
-  const [jumpInputVisible, setJumpInputVisible] = useState(false);
-  const [jumpInputValue, setJumpInputValue] = useState('');
-  const jumpInputRef = useRef<HTMLInputElement>(null);
 
-  // 高亮关键词
+  // 独立的中英文进度
+  const [zhPercent, setZhPercent] = useState(0);
+  const [enPercent, setEnPercent] = useState(0);
+  // 独立的跳转输入状态
+  const [zhJumpVisible, setZhJumpVisible] = useState(false);
+  const [enJumpVisible, setEnJumpVisible] = useState(false);
+  const [zhJumpValue, setZhJumpValue] = useState('');
+  const [enJumpValue, setEnJumpValue] = useState('');
+  const zhJumpRef = useRef<HTMLInputElement>(null);
+  const enJumpRef = useRef<HTMLInputElement>(null);
+
   const { chineseKeywords, englishKeywords, refresh: refreshExpressions } = useProjectExpressions(currentProject?.id);
-  
-  // DOM refs for scroll position preservation
+
   const leftColRef = useRef<HTMLTextAreaElement | HTMLDivElement | null>(null);
   const rightColRef = useRef<HTMLTextAreaElement | HTMLDivElement | null>(null);
   const scrollPositionRef = useRef<{ left: number; right: number }>({ left: 0, right: 0 });
@@ -70,22 +69,34 @@ export function PracticeView() {
     }
   }, [currentProject]);
 
-  // 初始化上次进度百分比显示（不自动滚动，用户可手动跳转）
+  // 初始化上次进度百分比显示
   useEffect(() => {
     if (!contentReady || !currentProject?.practiceProgress) return;
     const { scrollPercentage } = currentProject.practiceProgress;
     if (scrollPercentage > 0) {
-      setScrollPercent(Math.round(scrollPercentage * 100));
+      const pct = Math.round(scrollPercentage * 100);
+      setZhPercent(pct);
+      setEnPercent(pct);
     }
   }, [contentReady, currentProject]);
 
-  // 实时追踪滚动进度
+  // 实时追踪中文栏滚动进度
   useEffect(() => {
     const el = leftColRef.current;
     if (!el || viewMode !== 'practice') return;
     const handleScroll = () => {
-      const pct = calculateScrollPercentage(el as HTMLElement);
-      setScrollPercent(Math.round(pct * 100));
+      setZhPercent(Math.round(calculateScrollPercentage(el as HTMLElement) * 100));
+    };
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [viewMode, contentReady]);
+
+  // 实时追踪英文栏滚动进度
+  useEffect(() => {
+    const el = rightColRef.current;
+    if (!el || viewMode !== 'practice') return;
+    const handleScroll = () => {
+      setEnPercent(Math.round(calculateScrollPercentage(el as HTMLElement) * 100));
     };
     el.addEventListener('scroll', handleScroll);
     return () => el.removeEventListener('scroll', handleScroll);
@@ -94,61 +105,41 @@ export function PracticeView() {
   // 模式切换后恢复滚动位置
   useEffect(() => {
     if (!shouldRestoreScroll.current) return;
-    // 等待 DOM 完全渲染
     const timer = setTimeout(() => {
-      if (leftColRef.current) {
-        leftColRef.current.scrollTop = scrollPositionRef.current.left;
-      }
-      if (rightColRef.current) {
-        rightColRef.current.scrollTop = scrollPositionRef.current.right;
-      }
+      if (leftColRef.current) leftColRef.current.scrollTop = scrollPositionRef.current.left;
+      if (rightColRef.current) rightColRef.current.scrollTop = scrollPositionRef.current.right;
       shouldRestoreScroll.current = false;
     }, 50);
     return () => clearTimeout(timer);
   }, [viewMode]);
 
-  // 从文本构建 paragraphPairs
   const buildPairs = useCallback((): ParagraphPair[] => {
     const zhParagraphs = chineseText.split(/\n\n+/).map(s => s.trim()).filter(Boolean);
     const enParagraphs = englishText.split(/\n\n+/).map(s => s.trim()).filter(Boolean);
     const maxLen = Math.max(zhParagraphs.length, enParagraphs.length);
     const pairs: ParagraphPair[] = [];
     for (let i = 0; i < maxLen; i++) {
-      pairs.push({
-        index: i,
-        chinese: zhParagraphs[i] || '',
-        english: enParagraphs[i] || '',
-      });
+      pairs.push({ index: i, chinese: zhParagraphs[i] || '', english: enParagraphs[i] || '' });
     }
     return pairs;
   }, [chineseText, englishText]);
 
-  // 保存当前滚动位置
   const saveScrollPosition = useCallback(() => {
-    if (leftColRef.current) {
-      scrollPositionRef.current.left = leftColRef.current.scrollTop;
-    }
-    if (rightColRef.current) {
-      scrollPositionRef.current.right = rightColRef.current.scrollTop;
-    }
+    if (leftColRef.current) scrollPositionRef.current.left = leftColRef.current.scrollTop;
+    if (rightColRef.current) scrollPositionRef.current.right = rightColRef.current.scrollTop;
   }, []);
 
-  // 切换到练习模式时保存
   const handleSwitchToPractice = useCallback(async () => {
     saveScrollPosition();
     shouldRestoreScroll.current = true;
-    
     if (currentProject && viewMode === 'edit') {
       try {
         setSaving(true);
         const pairs = buildPairs();
         await dataService.updateProjectParagraphs(currentProject.id, pairs);
         showSuccess('已保存');
-      } catch {
-        showError('保存失败');
-      } finally {
-        setSaving(false);
-      }
+      } catch { showError('保存失败'); }
+      finally { setSaving(false); }
     }
     setViewMode('practice');
     setSelectedTextState(null);
@@ -161,9 +152,7 @@ export function PracticeView() {
     setSelectedTextState(null);
   }, [saveScrollPosition]);
 
-  // 退出时保存
   const handleExit = useCallback(async () => {
-    // 保存练习进度（滚动位置）
     if (currentProject && leftColRef.current) {
       try {
         const scrollPercentage = calculateScrollPercentage(leftColRef.current as HTMLElement);
@@ -171,9 +160,8 @@ export function PracticeView() {
           scrollPercentage,
           updatedAt: new Date().toISOString(),
         });
-      } catch { /* 静默处理，不阻断退出 */ }
+      } catch { /* 静默 */ }
     }
-
     if (currentProject && viewMode === 'edit') {
       try {
         const pairs = buildPairs();
@@ -183,64 +171,37 @@ export function PracticeView() {
     exitPractice();
   }, [currentProject, viewMode, buildPairs, exitPractice]);
 
-  // 跳转到指定百分比
-  const handleJumpToPercent = useCallback((percent: number) => {
+  // 跳转：中文栏
+  const handleZhJump = useCallback((percent: number) => {
     const clamped = Math.max(0, Math.min(100, percent));
-    const ratio = clamped / 100;
-    if (leftColRef.current) {
-      restoreScrollPosition(leftColRef.current as HTMLElement, ratio);
-    }
-    if (rightColRef.current) {
-      restoreScrollPosition(rightColRef.current as HTMLElement, ratio);
-    }
-    setScrollPercent(clamped);
-    setJumpInputVisible(false);
-    setJumpInputValue('');
+    if (leftColRef.current) restoreScrollPosition(leftColRef.current as HTMLElement, clamped / 100);
+    setZhPercent(clamped);
+    setZhJumpVisible(false);
+    setZhJumpValue('');
   }, []);
 
-  // 打开跳转输入框
-  const handleOpenJumpInput = useCallback(() => {
-    setJumpInputValue(String(scrollPercent));
-    setJumpInputVisible(true);
-    setTimeout(() => jumpInputRef.current?.select(), 0);
-  }, [scrollPercent]);
+  // 跳转：英文栏
+  const handleEnJump = useCallback((percent: number) => {
+    const clamped = Math.max(0, Math.min(100, percent));
+    if (rightColRef.current) restoreScrollPosition(rightColRef.current as HTMLElement, clamped / 100);
+    setEnPercent(clamped);
+    setEnJumpVisible(false);
+    setEnJumpValue('');
+  }, []);
 
-  // 跳转输入框按键处理
-  const handleJumpKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      const val = parseInt(jumpInputValue, 10);
-      if (!isNaN(val)) {
-        handleJumpToPercent(val);
-      }
-    } else if (e.key === 'Escape') {
-      setJumpInputVisible(false);
-      setJumpInputValue('');
-    }
-  }, [jumpInputValue, handleJumpToPercent]);
-
-  // 划词收藏（仅练习模式）
   const handleMouseUp = useCallback((side: 'zh' | 'en') => {
     if (viewMode !== 'practice') return;
-    
     setTimeout(() => {
       const sel = window.getSelection();
       const text = sel?.toString().trim();
       if (!text || text.length < 1) return;
-      
       const range = sel!.getRangeAt(0);
       const rect = range.getBoundingClientRect();
-      
-      setSelectedTextState({
-        text,
-        sourceLanguage: side,
-        position: { x: rect.left, y: rect.bottom + 8 },
-      });
+      setSelectedTextState({ text, sourceLanguage: side, position: { x: rect.left, y: rect.bottom + 8 } });
     }, 0);
   }, [viewMode]);
 
-  const handleSaveExpression = useCallback(async (data: {
-    chinese: string; english: string; notes: string;
-  }) => {
+  const handleSaveExpression = useCallback(async (data: { chinese: string; english: string; notes: string }) => {
     if (!currentProject) return;
     setSavingExpression(true);
     try {
@@ -251,9 +212,7 @@ export function PracticeView() {
       window.getSelection()?.removeAllRanges();
     } catch (error) {
       showError(error instanceof Error && error.name === 'DuplicateError' ? '该术语已存在' : '保存失败');
-    } finally {
-      setSavingExpression(false);
-    }
+    } finally { setSavingExpression(false); }
   }, [currentProject, showSuccess, showError, refreshExpressions]);
 
   if (!currentProject) {
@@ -272,58 +231,47 @@ export function PracticeView() {
       {/* 固定右上角工具栏 */}
       <div className="pv__toolbar">
         <div className="pv__toolbar-tabs">
-          <button
-            className={`pv__tab ${viewMode === 'edit' ? 'pv__tab--active' : ''}`}
-            onClick={handleSwitchToEdit}
-            disabled={saving}
-          >
-            编辑
-          </button>
-          <button
-            className={`pv__tab ${viewMode === 'practice' ? 'pv__tab--active' : ''}`}
-            onClick={handleSwitchToPractice}
-            disabled={saving}
-          >
-            练习
-          </button>
+          <button className={`pv__tab ${viewMode === 'edit' ? 'pv__tab--active' : ''}`} onClick={handleSwitchToEdit} disabled={saving}>编辑</button>
+          <button className={`pv__tab ${viewMode === 'practice' ? 'pv__tab--active' : ''}`} onClick={handleSwitchToPractice} disabled={saving}>练习</button>
         </div>
-        <button className="pv__btn pv__btn--ghost" onClick={handleExit} disabled={saving}>
-          退出
-        </button>
-        {viewMode === 'practice' && (
-          jumpInputVisible ? (
-            <div className="pv__jump-input-wrap">
-              <input
-                ref={jumpInputRef}
-                className="pv__jump-input"
-                type="number"
-                min={0}
-                max={100}
-                value={jumpInputValue}
-                onChange={e => setJumpInputValue(e.target.value)}
-                onKeyDown={handleJumpKeyDown}
-                onBlur={() => { setJumpInputVisible(false); setJumpInputValue(''); }}
-                placeholder="0-100"
-              />
-              <span className="pv__jump-input-suffix">%</span>
-            </div>
-          ) : (
-            <button
-              className="pv__progress-badge"
-              onClick={handleOpenJumpInput}
-              title="点击输入百分比跳转"
-            >
-              {scrollPercent}%
-            </button>
-          )
-        )}
+        <button className="pv__btn pv__btn--ghost" onClick={handleExit} disabled={saving}>退出</button>
       </div>
 
       {/* 双栏内容区 */}
       <div className="pv__body">
         {/* 左栏：中文 */}
         <div className="pv__col">
-          <div className="pv__col-label">中文</div>
+          <div className="pv__col-label">
+            <span>中文</span>
+            {viewMode === 'practice' && (
+              zhJumpVisible ? (
+                <div className="pv__jump-input-wrap">
+                  <input
+                    ref={zhJumpRef}
+                    className="pv__jump-input"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={zhJumpValue}
+                    onChange={e => setZhJumpValue(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') { const v = parseInt(zhJumpValue, 10); if (!isNaN(v)) handleZhJump(v); }
+                      else if (e.key === 'Escape') { setZhJumpVisible(false); setZhJumpValue(''); }
+                    }}
+                    onBlur={() => { setZhJumpVisible(false); setZhJumpValue(''); }}
+                    placeholder="0-100"
+                  />
+                  <span className="pv__jump-input-suffix">%</span>
+                </div>
+              ) : (
+                <button
+                  className="pv__progress-badge"
+                  onClick={() => { setZhJumpValue(String(zhPercent)); setZhJumpVisible(true); setTimeout(() => zhJumpRef.current?.select(), 0); }}
+                  title="点击输入百分比跳转"
+                >{zhPercent}%</button>
+              )
+            )}
+          </div>
           {viewMode === 'edit' ? (
             <textarea
               ref={leftColRef as React.RefObject<HTMLTextAreaElement>}
@@ -333,11 +281,7 @@ export function PracticeView() {
               placeholder="在此编辑中文内容，用空行分隔段落..."
             />
           ) : (
-            <div
-              ref={leftColRef as React.RefObject<HTMLDivElement>}
-              className="pv__content"
-              onMouseUp={() => handleMouseUp('zh')}
-            >
+            <div ref={leftColRef as React.RefObject<HTMLDivElement>} className="pv__content" onMouseUp={() => handleMouseUp('zh')}>
               {chineseText ? <HighlightedText text={chineseText} keywords={chineseKeywords} /> : <span className="pv__empty-text">（无内容）</span>}
             </div>
           )}
@@ -345,7 +289,37 @@ export function PracticeView() {
 
         {/* 右栏：英文 */}
         <div className="pv__col">
-          <div className="pv__col-label">英文</div>
+          <div className="pv__col-label">
+            <span>英文</span>
+            {viewMode === 'practice' && (
+              enJumpVisible ? (
+                <div className="pv__jump-input-wrap">
+                  <input
+                    ref={enJumpRef}
+                    className="pv__jump-input"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={enJumpValue}
+                    onChange={e => setEnJumpValue(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') { const v = parseInt(enJumpValue, 10); if (!isNaN(v)) handleEnJump(v); }
+                      else if (e.key === 'Escape') { setEnJumpVisible(false); setEnJumpValue(''); }
+                    }}
+                    onBlur={() => { setEnJumpVisible(false); setEnJumpValue(''); }}
+                    placeholder="0-100"
+                  />
+                  <span className="pv__jump-input-suffix">%</span>
+                </div>
+              ) : (
+                <button
+                  className="pv__progress-badge"
+                  onClick={() => { setEnJumpValue(String(enPercent)); setEnJumpVisible(true); setTimeout(() => enJumpRef.current?.select(), 0); }}
+                  title="点击输入百分比跳转"
+                >{enPercent}%</button>
+              )
+            )}
+          </div>
           {viewMode === 'edit' ? (
             <textarea
               ref={rightColRef as React.RefObject<HTMLTextAreaElement>}
@@ -355,28 +329,20 @@ export function PracticeView() {
               placeholder="在此编辑英文内容，用空行分隔段落..."
             />
           ) : (
-            <div
-              ref={rightColRef as React.RefObject<HTMLDivElement>}
-              className="pv__content"
-              onMouseUp={() => handleMouseUp('en')}
-            >
+            <div ref={rightColRef as React.RefObject<HTMLDivElement>} className="pv__content" onMouseUp={() => handleMouseUp('en')}>
               {englishText ? <HighlightedText text={englishText} keywords={englishKeywords} /> : <span className="pv__empty-text">（无内容）</span>}
             </div>
           )}
         </div>
       </div>
 
-      {/* 划词收藏 popup */}
       {selectedTextState && (
         <SaveExpressionPopup
           selectedText={selectedTextState.text}
           sourceLanguage={selectedTextState.sourceLanguage}
           position={selectedTextState.position}
           onSave={handleSaveExpression}
-          onCancel={() => {
-            setSelectedTextState(null);
-            window.getSelection()?.removeAllRanges();
-          }}
+          onCancel={() => { setSelectedTextState(null); window.getSelection()?.removeAllRanges(); }}
           saving={savingExpression}
         />
       )}
