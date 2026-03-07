@@ -14,6 +14,7 @@ export interface FlashcardCardProps {
   flashcard: Flashcard;
   onRemembered: () => void;
   onForgot: () => void;
+  onDelete: () => void;
   disabled?: boolean;
 }
 
@@ -31,6 +32,7 @@ export function FlashcardCard({
   flashcard,
   onRemembered,
   onForgot,
+  onDelete,
   disabled = false,
 }: FlashcardCardProps): React.ReactElement {
   const [showAnswer, setShowAnswer] = useState(false);
@@ -48,6 +50,11 @@ export function FlashcardCard({
     onForgot();
     setShowAnswer(false);
   }, [onForgot]);
+
+  const handleDelete = useCallback(() => {
+    onDelete();
+    setShowAnswer(false);
+  }, [onDelete]);
 
   return (
     <div className="flashcard-card">
@@ -98,6 +105,11 @@ export function FlashcardCard({
             <span className="flashcard-card__action-hint">
               下次：{getNextIntervalText(flashcard.currentInterval, false)}
             </span>
+          </div>
+          <div className="flashcard-card__action-group">
+            <button className="flashcard-card__delete-btn" onClick={handleDelete} disabled={disabled}>
+              🗑 删除
+            </button>
           </div>
           <div className="flashcard-card__action-group">
             <Button variant="primary" onClick={handleRemembered} disabled={disabled}>

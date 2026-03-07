@@ -5,6 +5,7 @@
 
 import { useCallback } from 'react';
 import type { Project, OpenAIConfig } from '../types';
+import type { NewsEntry } from '../types/briefing';
 import { dataService } from '../services/DataService';
 import { useAppDispatch } from './AppContext';
 import type { AppView, PracticeMode, ToastType, DataLoadStatus } from './AppContext';
@@ -45,6 +46,37 @@ export function useAppActions() {
    */
   const goToFlashcards = useCallback(() => {
     dispatch({ type: 'SET_VIEW', payload: 'flashcards' });
+  }, [dispatch]);
+
+  /**
+   * 导航到每日简报
+   */
+  const goToBriefing = useCallback(() => {
+    dispatch({ type: 'SET_VIEW', payload: 'briefing' });
+  }, [dispatch]);
+
+  /**
+   * 导航到术语库
+   */
+  const goToTermLibrary = useCallback(() => {
+    dispatch({ type: 'SET_VIEW', payload: 'term-library' });
+  }, [dispatch]);
+
+  /**
+   * 从简报进入研习会话
+   */
+  const startStudySession = useCallback(
+    (entry: NewsEntry) => {
+      dispatch({ type: 'START_STUDY_SESSION', payload: entry });
+    },
+    [dispatch]
+  );
+
+  /**
+   * 退出研习会话，返回简报
+   */
+  const exitStudySession = useCallback(() => {
+    dispatch({ type: 'EXIT_STUDY_SESSION' });
   }, [dispatch]);
 
   /**
@@ -247,6 +279,11 @@ export function useAppActions() {
     goToProjects,
     goToGlossary,
     goToFlashcards,
+    goToBriefing,
+    goToTermLibrary,
+    // 研习会话
+    startStudySession,
+    exitStudySession,
     // 项目管理
     setProject,
     // 练习相关

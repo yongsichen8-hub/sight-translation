@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>每日新闻简报</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+    .header { background: #1a73e8; color: white; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 22px; font-weight: 600; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header input[type="date"] { padding: 6px 10px; border: none; border-radius: 6px; font-size: 14px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
+    .btn-generate { background: #fff; color: #1a73e8; }
+    .btn-generate:hover { background: #e8f0fe; }
+    .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+    .container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+    .status { text-align: center; padding: 40px; color: #666; }
+    .status .icon { font-size: 48px; margin-bottom: 12px; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #ddd; border-top-color: #1a73e8; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 12px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .domain-section { margin-bottom: 28px; }
+    .domain-title { font-size: 18px; font-weight: 600; color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 6px; margin-bottom: 14px; }
+    .news-card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .news-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .news-title-zh { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .news-title-en { font-size: 13px; color: #888; margin-bottom: 8px; font-style: italic; }
+    .news-meta { display: flex; gap: 12px; font-size: 12px; color: #999; margin-bottom: 8px; }
+    .news-summary { font-size: 14px; line-height: 1.6; color: #555; }
+    .news-link { display: inline-block; margin-top: 8px; color: #1a73e8; text-decoration: none; font-size: 13px; }
+    .news-link:hover { text-decoration: underline; }
+    .error { background: #fdecea; color: #d32f2f; padding: 12px 16px; border-radius: 8px; text-align: center; }
+    .update-info { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📰 每日新闻简报</h1>
+    <div class="header-right">
+      <input type="date" id="datePicker">
+      <button class="btn btn-generate" id="generateBtn" onclick="generate()">生成今日简报</button>
+    </div>
+  </div>
+  <div class="container" id="content">
+    <div class="status"><div class="icon">⏳</div><p>加载中...</p></div>
+  </div>
+  <script>
+    const API = '';
+    const DOMAIN_LABELS = { 'ai-tech': 'AI科技', 'economy': '国际经济/金融', 'politics': '国际政治' };
+    const DOMAIN_ORDER = ['ai-tech', 'economy', 'politics'];
+
+    const datePicker = document.getElementById('datePicker');
+    const content = document.getElementById('content');
+    const generateBtn = document.getElementById('generateBtn');
+
+    datePicker.value = new Date().toISOString().slice(0, 10);
+    datePicker.addEventListener('change', () => loadBriefing(datePicker.value));
+
+    async function loadBriefing(date) {
+      content.innerHTML = '<div class="status"><div class="icon">⏳</div><p>加载中...</p></div>';
+      try {
+        const res = await fetch(API + '/api/briefing/daily?date=' + date);
+        const json = await res.json();
+        if (!json.success) {
+          content.innerHTML = '<div class="status"><div class="icon">📭</div><p>' + (json.error?.message || '暂无数据') + '</p></div>';
+          return;
+        }
+        renderBriefing(json.data);
+      } catch (e) {
+        content.innerHTML = '<div class="error">加载失败: ' + e.message + '</div>';
+      }
+    }
+
+    async function generate() {
+      generateBtn.disabled = true;
+      generateBtn.textContent = '生成中...';
+      content.innerHTML = '<div class="status"><div class="spinner"></div><p>正在抓取新闻并生成简报，请稍候（约1-2分钟）...</p></div>';
+      try {
+        const res = await fetch(API + '/api/briefing/trigger', { method: 'POST' });
+        const json = await res.json();
+        if (!json.success) {
+          content.innerHTML = '<div class="error">生成失败: ' + (json.error?.message || '未知错误') + '</div>';
+          return;
+        }
+        datePicker.value = new Date().toISOString().slice(0, 10);
+        await loadBriefing(datePicker.value);
+      } catch (e) {
+        content.innerHTML = '<div class="error">生成失败: ' + e.message + '</div>';
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = '生成今日简报';
+      }
+    }
+
+    function renderBriefing(data) {
+      const grouped = {};
+      for (const entry of data.entries) {
+        if (!grouped[entry.domain]) grouped[entry.domain] = [];
+        grouped[entry.domain].push(entry);
+      }
+      let html = '';
+      for (const domain of DOMAIN_ORDER) {
+        const entries = grouped[domain];
+        if (!entries || entries.length === 0) continue;
+        html += '<div class="domain-section">';
+        html += '<div class="domain-title">' + (DOMAIN_LABELS[domain] || domain) + '</div>';
+        for (const e of entries) {
+          const time = e.publishedAt ? new Date(e.publishedAt).toLocaleString('zh-CN') : '';
+          html += '<div class="news-card">';
+          html += '<div class="news-title-zh">' + esc(e.chineseTitle) + '</div>';
+          html += '<div class="news-title-en">' + esc(e.englishTitle) + '</div>';
+          html += '<div class="news-meta"><span>📰 ' + esc(e.sourceName) + '</span><span>🕐 ' + time + '</span></div>';
+          const text = e.summary || e.content;
+          if (text) {
+            const short = text.length > 200 ? text.slice(0, 200) + '...' : text;
+            html += '<div class="news-summary">' + esc(short) + '</div>';
+          }
+          if (e.sourceUrl) {
+            html += '<a class="news-link" href="' + esc(e.sourceUrl) + '" target="_blank">阅读原文 →</a>';
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+      if (data.generatedAt) {
+        html += '<div class="update-info">简报生成时间: ' + new Date(data.generatedAt).toLocaleString('zh-CN') + '</div>';
+      }
+      content.innerHTML = html || '<div class="status"><div class="icon">📭</div><p>暂无新闻条目</p></div>';
+    }
+
+    function esc(s) {
+      if (!s) return '';
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    loadBriefing(datePicker.value);
+  </script>
+</body>
+</html>

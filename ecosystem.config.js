@@ -18,8 +18,8 @@ module.exports = {
     },
     {
       name: 'sight-frontend',
-      script: 'npx',
-      args: 'serve dist -l 3000 --single',
+      script: 'serve',
+      args: 'dist -l 3000 --single',
       env: {
         NODE_ENV: 'production'
       },

@@ -1,8 +1,11 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-// 加载环境变量 - 使用 __dirname 确保找到正确的 .env 文件
-dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+// 加载环境变量 - 从项目根目录加载 .env
+// When compiled: __dirname = dist/config, so ../../.env = server/.env
+// When running source: __dirname = src/config, so ../../.env = server/.env
+const envPath = path.resolve(__dirname, '..', '..', '.env');
+dotenv.config({ path: envPath });
 
 export const config = {
   // 服务器配置

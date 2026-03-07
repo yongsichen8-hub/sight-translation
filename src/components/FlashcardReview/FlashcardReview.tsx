@@ -77,6 +77,29 @@ export function FlashcardReview(): React.ReactElement {
     }
   }, [currentIndex, dueCards, reviewing]);
 
+  const handleDelete = useCallback(async () => {
+    if (currentIndex >= dueCards.length || reviewing) return;
+    const currentCard = dueCards[currentIndex];
+    if (!currentCard) return;
+
+    try {
+      setReviewing(true);
+      await dataService.deleteExpression(currentCard.expression.id);
+      setToast({ message: '术语已删除', type: 'success' });
+      // 从列表中移除当前卡片
+      setDueCards(prev => prev.filter((_, i) => i !== currentIndex));
+      // 如果删除的不是最后一张，index 不变（下一张自动顶上来）
+      // 如果删除的是最后一张，index 需要回退
+      if (currentIndex >= dueCards.length - 1) {
+        setCurrentIndex(prev => Math.max(0, prev));
+      }
+    } catch {
+      setToast({ message: '删除失败，请重试', type: 'error' });
+    } finally {
+      setReviewing(false);
+    }
+  }, [currentIndex, dueCards, reviewing]);
+
   if (loading) return <Loading text="加载复习卡片..." />;
 
   if (error) {
@@ -141,6 +164,7 @@ export function FlashcardReview(): React.ReactElement {
               flashcard={currentCard.flashcard}
               onRemembered={() => handleReview(true)}
               onForgot={() => handleReview(false)}
+              onDelete={handleDelete}
               disabled={reviewing}
             />
           )}

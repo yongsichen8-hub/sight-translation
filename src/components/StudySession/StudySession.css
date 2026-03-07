@@ -1,0 +1,458 @@
+/**
+ * StudySession 组件样式
+ * 双栏并排布局，独立滚动，响应式 + 暗色模式
+ */
+
+/* ==================== Page Container ==================== */
+
+.study-session {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.study-session__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  flex-shrink: 0;
+}
+
+.study-session__back-btn {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.study-session__back-btn:hover {
+  border-color: #4a90d9;
+  background: #f0f7ff;
+}
+
+.study-session__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.study-session__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: #6b7280;
+}
+
+/* ==================== Comparison View ==================== */
+
+.comparison-view {
+  display: flex;
+  gap: 1px;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e0e0e0;
+}
+
+.comparison-view__panel {
+  flex: 1;
+  overflow-y: auto;
+  background: #fff;
+  min-width: 0;
+}
+
+.comparison-view__panel--left {
+  border-right: none;
+}
+
+.comparison-view__panel--right {
+  border-left: none;
+}
+
+/* ==================== Chinese Panel ==================== */
+
+.chinese-panel {
+  padding: 1.25rem;
+}
+
+.chinese-panel__header {
+  margin-bottom: 0.75rem;
+}
+
+.chinese-panel__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4a90d9;
+}
+
+.chinese-panel__title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+.chinese-panel__content {
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.8;
+}
+
+.chinese-panel__paragraph {
+  margin: 0 0 0.75rem;
+}
+
+/* ==================== English Panel ==================== */
+
+.english-panel {
+  padding: 1.25rem;
+}
+
+.english-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.english-panel__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #10b981;
+}
+
+.english-panel__source {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.english-panel__source-link {
+  color: #4a90d9;
+  text-decoration: none;
+}
+
+.english-panel__source-link:hover {
+  text-decoration: underline;
+}
+
+.english-panel__content {
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.8;
+}
+
+.english-panel__paragraph {
+  margin: 0 0 0.75rem;
+}
+
+.english-panel__html p {
+  margin: 0 0 0.75rem;
+}
+
+/* ==================== URL Input Form ==================== */
+
+.url-input-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  min-height: 300px;
+}
+
+.url-input-form__prompt {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.url-input-form__prompt-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.url-input-form__form {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+.url-input-form__form--manual {
+  flex-direction: column;
+}
+
+.url-input-form__input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.url-input-form__input:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+}
+
+.url-input-form__textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+  background: #fff;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+
+.url-input-form__textarea:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+}
+
+.url-input-form__submit {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #4a90d9;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.url-input-form__submit:hover:not(:disabled) {
+  background: #3a7bc8;
+}
+
+.url-input-form__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.url-input-form__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+.url-input-form__back-btn {
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.url-input-form__back-btn:hover {
+  border-color: #4a90d9;
+}
+
+.url-input-form__error {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.url-input-form__error-text {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: #ef4444;
+}
+
+.url-input-form__manual-btn {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #4a90d9;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.url-input-form__manual-btn:hover {
+  border-color: #4a90d9;
+  background: #f0f7ff;
+}
+
+/* ==================== Dark Mode ==================== */
+
+@media (prefers-color-scheme: dark) {
+  .study-session__back-btn {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .study-session__back-btn:hover {
+    border-color: #60a5fa;
+    background: #1e3a5f;
+  }
+
+  .study-session__title {
+    color: #f9fafb;
+  }
+
+  .comparison-view {
+    border-color: #374151;
+    background: #374151;
+  }
+
+  .comparison-view__panel {
+    background: #111827;
+  }
+
+  .chinese-panel__title {
+    color: #f9fafb;
+  }
+
+  .chinese-panel__content {
+    color: #d1d5db;
+  }
+
+  .english-panel__content {
+    color: #d1d5db;
+  }
+
+  .english-panel__source-link {
+    color: #60a5fa;
+  }
+
+  .url-input-form__input {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .url-input-form__input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  }
+
+  .url-input-form__textarea {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .url-input-form__textarea:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  }
+
+  .url-input-form__submit {
+    background: #3b82f6;
+  }
+
+  .url-input-form__submit:hover:not(:disabled) {
+    background: #2563eb;
+  }
+
+  .url-input-form__back-btn {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .url-input-form__back-btn:hover {
+    border-color: #60a5fa;
+  }
+
+  .url-input-form__manual-btn {
+    background: #1f2937;
+    border-color: #374151;
+    color: #60a5fa;
+  }
+
+  .url-input-form__manual-btn:hover {
+    border-color: #60a5fa;
+    background: #1e3a5f;
+  }
+
+  .url-input-form__prompt-text {
+    color: #9ca3af;
+  }
+}
+
+/* ==================== Responsive: Stack Vertically on Mobile ==================== */
+
+@media (max-width: 768px) {
+  .study-session {
+    padding: 0 0.5rem;
+  }
+
+  .study-session__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .study-session__title {
+    font-size: 1rem;
+    white-space: normal;
+  }
+
+  .comparison-view {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .comparison-view__panel {
+    overflow-y: visible;
+  }
+
+  .comparison-view__panel--left {
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .url-input-form {
+    min-height: 200px;
+    padding: 1.5rem 0.5rem;
+  }
+
+  .url-input-form__form {
+    flex-direction: column;
+  }
+
+  .url-input-form__submit {
+    width: 100%;
+  }
+}

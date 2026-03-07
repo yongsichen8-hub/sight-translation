@@ -1,0 +1,288 @@
+/**
+ * TermCollection 样式
+ * TextSelectionPopup + TermEditForm + 术语高亮
+ */
+
+/* ==================== TextSelectionPopup ==================== */
+
+.text-selection-popup {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #4a90d9;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  transition: background 0.15s;
+  animation: popup-fade-in 0.15s ease-out;
+}
+
+.text-selection-popup:hover {
+  background: #3a7bc8;
+}
+
+.text-selection-popup:focus {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+@keyframes popup-fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(0);
+  }
+}
+
+/* ==================== TermEditForm ==================== */
+
+.term-edit-form__modal {
+  max-width: 460px;
+}
+
+.term-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.term-edit-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.term-edit-form__label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.term-edit-form__required {
+  color: #ef4444;
+}
+
+.term-edit-form__input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.term-edit-form__input:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.15);
+}
+
+.term-edit-form__input--readonly {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: default;
+}
+
+.term-edit-form__input--error {
+  border-color: #ef4444;
+}
+
+.term-edit-form__input--error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+}
+
+.term-edit-form__select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.term-edit-form__select:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.15);
+}
+
+.term-edit-form__textarea {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+  background: #fff;
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+
+.term-edit-form__textarea:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.15);
+}
+
+.term-edit-form__error-text {
+  font-size: 0.75rem;
+  color: #ef4444;
+}
+
+.term-edit-form__error-banner {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #ef4444;
+  font-size: 0.85rem;
+}
+
+.term-edit-form__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.term-edit-form__cancel-btn {
+  padding: 8px 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.term-edit-form__cancel-btn:hover:not(:disabled) {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.term-edit-form__save-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #4a90d9;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.term-edit-form__save-btn:hover:not(:disabled) {
+  background: #3a7bc8;
+}
+
+.term-edit-form__save-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ==================== Highlighted Term ==================== */
+
+.highlighted-term {
+  background: #fef3c7;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ==================== Dark Mode ==================== */
+
+@media (prefers-color-scheme: dark) {
+  .text-selection-popup {
+    background: #3b82f6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .text-selection-popup:hover {
+    background: #2563eb;
+  }
+
+  .term-edit-form__label {
+    color: #d1d5db;
+  }
+
+  .term-edit-form__input {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .term-edit-form__input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  }
+
+  .term-edit-form__input--readonly {
+    background: #111827;
+    color: #9ca3af;
+  }
+
+  .term-edit-form__select {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .term-edit-form__select:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  }
+
+  .term-edit-form__textarea {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .term-edit-form__textarea:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  }
+
+  .term-edit-form__error-banner {
+    background: #451a1a;
+    color: #fca5a5;
+  }
+
+  .term-edit-form__cancel-btn {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .term-edit-form__cancel-btn:hover:not(:disabled) {
+    border-color: #4b5563;
+    background: #374151;
+  }
+
+  .term-edit-form__save-btn {
+    background: #3b82f6;
+  }
+
+  .term-edit-form__save-btn:hover:not(:disabled) {
+    background: #2563eb;
+  }
+
+  .highlighted-term {
+    background: #78350f;
+    color: #fef3c7;
+  }
+}

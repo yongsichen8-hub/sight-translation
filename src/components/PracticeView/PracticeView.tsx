@@ -74,8 +74,6 @@ export function PracticeView() {
       // 异步获取最新项目数据以恢复累计练习时间
       dataService.getProject(currentProject.id).then(fresh => {
         const savedTime = fresh?.practiceProgress?.practiceTimeSeconds ?? 0;
-        console.log('[Timer Debug] fresh practiceProgress:', JSON.stringify(fresh?.practiceProgress));
-        console.log('[Timer Debug] restored savedTime:', savedTime);
         setPracticeSeconds(savedTime);
         practiceSecondsRef.current = savedTime;
       }).catch(() => { /* 静默 */ });
@@ -194,14 +192,12 @@ export function PracticeView() {
         const scrollPercentage = leftColRef.current
           ? calculateScrollPercentage(leftColRef.current as HTMLElement)
           : (currentProject.practiceProgress?.scrollPercentage ?? 0);
-        console.log('[Timer Debug] Saving practiceTimeSeconds:', practiceSecondsRef.current);
         await dataService.updateProjectProgress(currentProject.id, {
           scrollPercentage,
           practiceTimeSeconds: practiceSecondsRef.current,
           updatedAt: new Date().toISOString(),
         });
-        console.log('[Timer Debug] Save success');
-      } catch (err) { console.error('[Timer Debug] Save failed:', err); }
+      } catch { /* 静默 */ }
     }
     if (currentProject && viewMode === 'edit') {
       try {

@@ -115,3 +115,25 @@
   font-size: 0.75rem;
   color: #999;
 }
+
+.flashcard-card__delete-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.flashcard-card__delete-btn:hover {
+  color: #e53e3e;
+  border-color: #e53e3e;
+  background: #fff5f5;
+}
+
+.flashcard-card__delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
