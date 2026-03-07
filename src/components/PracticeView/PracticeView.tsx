@@ -68,28 +68,42 @@ export function PracticeView() {
       const pairs = currentProject.paragraphPairs || [];
       setChineseText(pairs.map(p => p.chinese).join('\n\n'));
       setEnglishText(pairs.map(p => p.english).join('\n\n'));
-      // 恢复累计练习时间
-      const savedTime = currentProject.practiceProgress?.practiceTimeSeconds ?? 0;
-      console.log('[Timer Debug] practiceProgress:', JSON.stringify(currentProject.practiceProgress));
-      console.log('[Timer Debug] savedTime:', savedTime);
-      setPracticeSeconds(savedTime);
-      practiceSecondsRef.current = savedTime;
       hasInitialized.current = true;
       setContentReady(true);
+
+      // 异步获取最新项目数据以恢复累计练习时间
+      dataService.getProject(currentProject.id).then(fresh => {
+        const savedTime = fresh?.practiceProgress?.practiceTimeSeconds ?? 0;
+        console.log('[Timer Debug] fresh practiceProgress:', JSON.stringify(fresh?.practiceProgress));
+        console.log('[Timer Debug] restored savedTime:', savedTime);
+        setPracticeSeconds(savedTime);
+        practiceSecondsRef.current = savedTime;
+      }).catch(() => { /* 静默 */ });
     }
   }, [currentProject]);
 
-  // 练习计时器：每秒递增
+  // 练习计时器：每秒递增，每30秒自动保存
   useEffect(() => {
     const timer = setInterval(() => {
       setPracticeSeconds(prev => {
         const next = prev + 1;
         practiceSecondsRef.current = next;
+        // 每30秒自动保存累计时间
+        if (next % 30 === 0 && currentProject) {
+          const scrollPct = leftColRef.current
+            ? calculateScrollPercentage(leftColRef.current as HTMLElement)
+            : 0;
+          dataService.updateProjectProgress(currentProject.id, {
+            scrollPercentage: scrollPct,
+            practiceTimeSeconds: next,
+            updatedAt: new Date().toISOString(),
+          }).catch(() => { /* 静默 */ });
+        }
         return next;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [currentProject]);
 
   // 初始化上次进度百分比显示
   useEffect(() => {
