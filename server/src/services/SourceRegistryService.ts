@@ -15,7 +15,7 @@ export class SourceRegistryService {
       this.validate();
     } catch (err) {
       console.warn(`⚠️ 无法加载 sourceRegistry.json (${filePath})，使用空注册表`);
-      this.registry = { sources: [] };
+      this.registry = { version: 0, sources: [], lastUpdated: new Date().toISOString() };
     }
   }
 
