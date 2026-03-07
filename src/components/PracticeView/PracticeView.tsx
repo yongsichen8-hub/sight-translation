@@ -43,6 +43,7 @@ export function PracticeView() {
   const [saving, setSaving] = useState(false);
   const hasInitialized = useRef(false);
   const [contentReady, setContentReady] = useState(false);
+  const [scrollPercent, setScrollPercent] = useState(0);
 
   // 高亮关键词
   const { chineseKeywords, englishKeywords, refresh: refreshExpressions } = useProjectExpressions(currentProject?.id);
@@ -70,33 +71,48 @@ export function PracticeView() {
     const { scrollPercentage } = currentProject.practiceProgress;
     if (scrollPercentage <= 0) return;
 
-    // 等待内容渲染完成后恢复
-    const timer = setTimeout(() => {
-      if (leftColRef.current) {
-        restoreScrollPosition(leftColRef.current as HTMLElement, scrollPercentage);
-      }
-      if (rightColRef.current) {
-        restoreScrollPosition(rightColRef.current as HTMLElement, scrollPercentage);
-      }
-    }, 100);
-    return () => clearTimeout(timer);
+    // 多次尝试恢复，确保内容完全渲染
+    const attempts = [100, 300, 600];
+    const timers = attempts.map(delay =>
+      setTimeout(() => {
+        if (leftColRef.current) {
+          restoreScrollPosition(leftColRef.current as HTMLElement, scrollPercentage);
+        }
+        if (rightColRef.current) {
+          restoreScrollPosition(rightColRef.current as HTMLElement, scrollPercentage);
+        }
+        setScrollPercent(Math.round(scrollPercentage * 100));
+      }, delay)
+    );
+    return () => timers.forEach(clearTimeout);
   }, [contentReady, currentProject]);
+
+  // 实时追踪滚动进度
+  useEffect(() => {
+    const el = leftColRef.current;
+    if (!el || viewMode !== 'practice') return;
+    const handleScroll = () => {
+      const pct = calculateScrollPercentage(el as HTMLElement);
+      setScrollPercent(Math.round(pct * 100));
+    };
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [viewMode, contentReady]);
 
   // 模式切换后恢复滚动位置
   useEffect(() => {
-    if (shouldRestoreScroll.current) {
-      // 等待 DOM 完全渲染
-      const timer = setTimeout(() => {
-        if (leftColRef.current) {
-          leftColRef.current.scrollTop = scrollPositionRef.current.left;
-        }
-        if (rightColRef.current) {
-          rightColRef.current.scrollTop = scrollPositionRef.current.right;
-        }
-        shouldRestoreScroll.current = false;
-      }, 50);
-      return () => clearTimeout(timer);
-    }
+    if (!shouldRestoreScroll.current) return;
+    // 等待 DOM 完全渲染
+    const timer = setTimeout(() => {
+      if (leftColRef.current) {
+        leftColRef.current.scrollTop = scrollPositionRef.current.left;
+      }
+      if (rightColRef.current) {
+        rightColRef.current.scrollTop = scrollPositionRef.current.right;
+      }
+      shouldRestoreScroll.current = false;
+    }, 50);
+    return () => clearTimeout(timer);
   }, [viewMode]);
 
   // 从文本构建 paragraphPairs
@@ -247,6 +263,9 @@ export function PracticeView() {
         <button className="pv__btn pv__btn--ghost" onClick={handleExit} disabled={saving}>
           退出
         </button>
+        {viewMode === 'practice' && (
+          <span className="pv__progress-badge">{scrollPercent}%</span>
+        )}
       </div>
 
       {/* 双栏内容区 */}
