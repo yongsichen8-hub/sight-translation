@@ -44,6 +44,11 @@ export function PracticeView() {
   const hasInitialized = useRef(false);
   const [contentReady, setContentReady] = useState(false);
   const [scrollPercent, setScrollPercent] = useState(0);
+  
+  // 跳转输入
+  const [jumpInputVisible, setJumpInputVisible] = useState(false);
+  const [jumpInputValue, setJumpInputValue] = useState('');
+  const jumpInputRef = useRef<HTMLInputElement>(null);
 
   // 高亮关键词
   const { chineseKeywords, englishKeywords, refresh: refreshExpressions } = useProjectExpressions(currentProject?.id);
@@ -65,53 +70,13 @@ export function PracticeView() {
     }
   }, [currentProject]);
 
-  // 恢复练习进度（滚动位置）
+  // 初始化上次进度百分比显示（不自动滚动，用户可手动跳转）
   useEffect(() => {
     if (!contentReady || !currentProject?.practiceProgress) return;
     const { scrollPercentage } = currentProject.practiceProgress;
-    if (scrollPercentage <= 0) return;
-
-    const el = leftColRef.current as HTMLElement | null;
-    const elRight = rightColRef.current as HTMLElement | null;
-    if (!el) return;
-
-    // 使用 ResizeObserver 等待内容完全渲染后再恢复
-    let restored = false;
-    const doRestore = () => {
-      if (restored) return;
-      const maxScroll = el.scrollHeight - el.clientHeight;
-      if (maxScroll <= 0) return; // 内容还没渲染完或不可滚动
-      restored = true;
-      observer?.disconnect();
-      restoreScrollPosition(el, scrollPercentage);
-      if (elRight) restoreScrollPosition(elRight, scrollPercentage);
+    if (scrollPercentage > 0) {
       setScrollPercent(Math.round(scrollPercentage * 100));
-    };
-
-    // 先尝试立即恢复
-    requestAnimationFrame(doRestore);
-
-    // 如果内容还没渲染完，用 ResizeObserver 监听变化
-    const observer = new ResizeObserver(() => {
-      requestAnimationFrame(doRestore);
-    });
-    observer.observe(el);
-
-    // 兜底：最多等 2 秒
-    const fallback = setTimeout(() => {
-      if (!restored) {
-        restored = true;
-        observer.disconnect();
-        restoreScrollPosition(el, scrollPercentage);
-        if (elRight) restoreScrollPosition(elRight, scrollPercentage);
-        setScrollPercent(Math.round(scrollPercentage * 100));
-      }
-    }, 2000);
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(fallback);
-    };
+    }
   }, [contentReady, currentProject]);
 
   // 实时追踪滚动进度
@@ -218,6 +183,41 @@ export function PracticeView() {
     exitPractice();
   }, [currentProject, viewMode, buildPairs, exitPractice]);
 
+  // 跳转到指定百分比
+  const handleJumpToPercent = useCallback((percent: number) => {
+    const clamped = Math.max(0, Math.min(100, percent));
+    const ratio = clamped / 100;
+    if (leftColRef.current) {
+      restoreScrollPosition(leftColRef.current as HTMLElement, ratio);
+    }
+    if (rightColRef.current) {
+      restoreScrollPosition(rightColRef.current as HTMLElement, ratio);
+    }
+    setScrollPercent(clamped);
+    setJumpInputVisible(false);
+    setJumpInputValue('');
+  }, []);
+
+  // 打开跳转输入框
+  const handleOpenJumpInput = useCallback(() => {
+    setJumpInputValue(String(scrollPercent));
+    setJumpInputVisible(true);
+    setTimeout(() => jumpInputRef.current?.select(), 0);
+  }, [scrollPercent]);
+
+  // 跳转输入框按键处理
+  const handleJumpKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const val = parseInt(jumpInputValue, 10);
+      if (!isNaN(val)) {
+        handleJumpToPercent(val);
+      }
+    } else if (e.key === 'Escape') {
+      setJumpInputVisible(false);
+      setJumpInputValue('');
+    }
+  }, [jumpInputValue, handleJumpToPercent]);
+
   // 划词收藏（仅练习模式）
   const handleMouseUp = useCallback((side: 'zh' | 'en') => {
     if (viewMode !== 'practice') return;
@@ -291,7 +291,31 @@ export function PracticeView() {
           退出
         </button>
         {viewMode === 'practice' && (
-          <span className="pv__progress-badge">{scrollPercent}%</span>
+          jumpInputVisible ? (
+            <div className="pv__jump-input-wrap">
+              <input
+                ref={jumpInputRef}
+                className="pv__jump-input"
+                type="number"
+                min={0}
+                max={100}
+                value={jumpInputValue}
+                onChange={e => setJumpInputValue(e.target.value)}
+                onKeyDown={handleJumpKeyDown}
+                onBlur={() => { setJumpInputVisible(false); setJumpInputValue(''); }}
+                placeholder="0-100"
+              />
+              <span className="pv__jump-input-suffix">%</span>
+            </div>
+          ) : (
+            <button
+              className="pv__progress-badge"
+              onClick={handleOpenJumpInput}
+              title="点击输入百分比跳转"
+            >
+              {scrollPercent}%
+            </button>
+          )
         )}
       </div>
 

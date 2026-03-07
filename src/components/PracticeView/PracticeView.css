@@ -197,7 +197,7 @@
   border-radius: 2px;
 }
 
-/* ── 进度百分比标记 ── */
+/* ── 进度跳转控件 ── */
 .pv__progress-badge {
   font-size: 0.8rem;
   font-weight: 600;
@@ -208,4 +208,49 @@
   min-width: 40px;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pv__progress-badge:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.pv__jump-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid #3b82f6;
+  border-radius: 8px;
+  padding: 2px 6px;
+  gap: 2px;
+}
+
+.pv__jump-input {
+  width: 42px;
+  border: none;
+  outline: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: right;
+  background: transparent;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.pv__jump-input::-webkit-outer-spin-button,
+.pv__jump-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pv__jump-input-suffix {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #9ca3af;
 }
