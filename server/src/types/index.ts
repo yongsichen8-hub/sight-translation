@@ -25,7 +25,7 @@ export interface Project {
   chineseParagraphs: string[];
   englishParagraphs: string[];
   paragraphPairs: ParagraphPair[];
-  practiceProgress?: { scrollPercentage: number; updatedAt: string };
+  practiceProgress?: { scrollPercentage: number; practiceTimeSeconds?: number; updatedAt: string };
 }
 
 export interface ProjectInput {

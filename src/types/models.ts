@@ -28,6 +28,8 @@ export interface ParagraphPair {
 export interface ProgressData {
   /** 滚动百分比，0 到 1 之间的小数 */
   scrollPercentage: number;
+  /** 累计练习时间（秒） */
+  practiceTimeSeconds?: number;
   /** 最后更新时间 */
   updatedAt: Date;
 }

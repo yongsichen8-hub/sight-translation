@@ -246,14 +246,18 @@ export async function updateProjectParagraphs(id: string, paragraphPairs: Paragr
  */
 export async function updateProjectProgress(
   id: string,
-  progress: { scrollPercentage: number; updatedAt: string }
+  progress: { scrollPercentage: number; practiceTimeSeconds?: number; updatedAt: string }
 ): Promise<void> {
   if (_isAuthenticated) {
     await apiClient.updateProject(id, { practiceProgress: progress } as Parameters<typeof apiClient.updateProject>[1]);
     return;
   }
   await db.projects.update(id, {
-    practiceProgress: { scrollPercentage: progress.scrollPercentage, updatedAt: new Date(progress.updatedAt) },
+    practiceProgress: {
+      scrollPercentage: progress.scrollPercentage,
+      ...(progress.practiceTimeSeconds !== undefined && { practiceTimeSeconds: progress.practiceTimeSeconds }),
+      updatedAt: new Date(progress.updatedAt),
+    },
     updatedAt: new Date(),
   });
 }

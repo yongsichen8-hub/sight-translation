@@ -40,6 +40,10 @@ export function PracticeView() {
   const hasInitialized = useRef(false);
   const [contentReady, setContentReady] = useState(false);
 
+  // 累计练习计时
+  const [practiceSeconds, setPracticeSeconds] = useState(0);
+  const practiceSecondsRef = useRef(0);
+
   // 独立的中英文进度
   const [zhPercent, setZhPercent] = useState(0);
   const [enPercent, setEnPercent] = useState(0);
@@ -64,10 +68,26 @@ export function PracticeView() {
       const pairs = currentProject.paragraphPairs || [];
       setChineseText(pairs.map(p => p.chinese).join('\n\n'));
       setEnglishText(pairs.map(p => p.english).join('\n\n'));
+      // 恢复累计练习时间
+      const savedTime = currentProject.practiceProgress?.practiceTimeSeconds ?? 0;
+      setPracticeSeconds(savedTime);
+      practiceSecondsRef.current = savedTime;
       hasInitialized.current = true;
       setContentReady(true);
     }
   }, [currentProject]);
+
+  // 练习计时器：每秒递增
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPracticeSeconds(prev => {
+        const next = prev + 1;
+        practiceSecondsRef.current = next;
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // 初始化上次进度百分比显示
   useEffect(() => {
@@ -158,6 +178,7 @@ export function PracticeView() {
         const scrollPercentage = calculateScrollPercentage(leftColRef.current as HTMLElement);
         await dataService.updateProjectProgress(currentProject.id, {
           scrollPercentage,
+          practiceTimeSeconds: practiceSecondsRef.current,
           updatedAt: new Date().toISOString(),
         });
       } catch { /* 静默 */ }
@@ -214,6 +235,14 @@ export function PracticeView() {
       showError(error instanceof Error && error.name === 'DuplicateError' ? '该术语已存在' : '保存失败');
     } finally { setSavingExpression(false); }
   }, [currentProject, showSuccess, showError, refreshExpressions]);
+
+  // 格式化秒数为 HH:MM:SS
+  const formatTime = (totalSeconds: number): string => {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
 
   if (!currentProject) {
     return (
@@ -346,6 +375,9 @@ export function PracticeView() {
           saving={savingExpression}
         />
       )}
+
+      {/* 左下角累计计时 */}
+      <div className="pv__timer">{formatTime(practiceSeconds)}</div>
     </div>
   );
 }
