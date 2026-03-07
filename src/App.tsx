@@ -1,10 +1,16 @@
 import { useEffect, useCallback } from 'react';
 import { AppProvider, useAppState } from './context/AppContext';
 import { useAppActions } from './context/useAppActions';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProjectManager } from './components/ProjectManager';
 import { PracticeView } from './components/PracticeView';
 import { GlossaryManager } from './components/GlossaryManager';
 import { FlashcardReview } from './components/FlashcardReview';
+import { UserMenu } from './components/UserMenu/UserMenu';
+import { MigrationDialog } from './components/MigrationDialog/MigrationDialog';
+import { DailyBriefingPage } from './components/DailyBriefing/DailyBriefingPage';
+import { StudySessionPage } from './components/StudySession/StudySessionPage';
+import { TermLibraryPage } from './components/TermLibrary/TermLibraryPage';
 import { Toast, Button } from './components/common';
 import { initializeDatabase } from './db';
 import './App.css';
@@ -14,7 +20,8 @@ import './App.css';
  */
 function AppNav() {
   const { currentView } = useAppState();
-  const { goToProjects, goToGlossary, goToFlashcards } = useAppActions();
+  const { goToProjects, goToGlossary, goToFlashcards, goToBriefing, goToTermLibrary } = useAppActions();
+  const { isAuthenticated, login } = useAuth();
 
   return (
     <nav className="app-nav">
@@ -40,8 +47,27 @@ function AppNav() {
         >
           复习
         </button>
+        <button
+          className={`app-nav__link ${currentView === 'briefing' ? 'app-nav__link--active' : ''}`}
+          onClick={goToBriefing}
+        >
+          简报
+        </button>
+        <button
+          className={`app-nav__link ${currentView === 'term-library' ? 'app-nav__link--active' : ''}`}
+          onClick={goToTermLibrary}
+        >
+          术语库
+        </button>
       </div>
       <div className="app-nav__user">
+        {isAuthenticated ? (
+          <UserMenu />
+        ) : (
+          <button className="app-nav__login-btn" onClick={login}>
+            飞书登录
+          </button>
+        )}
       </div>
     </nav>
   );
@@ -53,14 +79,11 @@ function AppNav() {
 function AppContent() {
   const { currentView, dataLoadStatus, error } = useAppState();
   const { setDataLoadStatus, setError, useEmptyData, retryDataLoad } = useAppActions();
+  const { isFirstLogin, setFirstLoginComplete } = useAuth();
 
-  /**
-   * 初始化数据库连接
-   */
   const initializeDb = useCallback(async () => {
     try {
       setDataLoadStatus('loading');
-      // 尝试打开数据库连接
       await initializeDatabase();
       setDataLoadStatus('success');
     } catch (err) {
@@ -70,27 +93,19 @@ function AppContent() {
     }
   }, [setDataLoadStatus, setError]);
 
-  // 初始化数据库
   useEffect(() => {
     initializeDb();
   }, [initializeDb]);
 
-  /**
-   * 处理重试
-   */
   const handleRetry = useCallback(() => {
     retryDataLoad();
     initializeDb();
   }, [retryDataLoad, initializeDb]);
 
-  /**
-   * 处理使用空数据
-   */
   const handleUseEmptyData = useCallback(() => {
     useEmptyData();
   }, [useEmptyData]);
 
-  // 数据加载中
   if (dataLoadStatus === 'loading') {
     return (
       <main className="app-main">
@@ -102,7 +117,6 @@ function AppContent() {
     );
   }
 
-  // 数据加载失败
   if (dataLoadStatus === 'error') {
     return (
       <main className="app-main">
@@ -136,12 +150,27 @@ function AppContent() {
         return <GlossaryManager />;
       case 'flashcards':
         return <FlashcardReview />;
+      case 'briefing':
+        return <DailyBriefingPage />;
+      case 'study-session':
+        return <StudySessionPage />;
+      case 'term-library':
+        return <TermLibraryPage />;
       default:
         return <ProjectManager />;
     }
   };
 
-  return <main className="app-main">{renderView()}</main>;
+  return (
+    <>
+      <main className="app-main">{renderView()}</main>
+      <MigrationDialog
+        visible={isFirstLogin}
+        onClose={setFirstLoginComplete}
+        onComplete={setFirstLoginComplete}
+      />
+    </>
+  );
 }
 
 /**
@@ -151,9 +180,7 @@ function GlobalToast() {
   const { toast } = useAppState();
   const { hideToast } = useAppActions();
 
-  if (!toast) {
-    return null;
-  }
+  if (!toast) return null;
 
   return (
     <Toast
@@ -168,17 +195,19 @@ function GlobalToast() {
 }
 
 /**
- * 应用根组件（无需登录）
+ * 应用根组件
  */
 function App() {
   return (
-    <AppProvider>
-      <div className="app">
-        <AppNav />
-        <AppContent />
-        <GlobalToast />
-      </div>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <div className="app">
+          <AppNav />
+          <AppContent />
+          <GlobalToast />
+        </div>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 
