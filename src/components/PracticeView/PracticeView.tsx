@@ -70,6 +70,8 @@ export function PracticeView() {
       setEnglishText(pairs.map(p => p.english).join('\n\n'));
       // 恢复累计练习时间
       const savedTime = currentProject.practiceProgress?.practiceTimeSeconds ?? 0;
+      console.log('[Timer Debug] practiceProgress:', JSON.stringify(currentProject.practiceProgress));
+      console.log('[Timer Debug] savedTime:', savedTime);
       setPracticeSeconds(savedTime);
       practiceSecondsRef.current = savedTime;
       hasInitialized.current = true;
@@ -178,12 +180,14 @@ export function PracticeView() {
         const scrollPercentage = leftColRef.current
           ? calculateScrollPercentage(leftColRef.current as HTMLElement)
           : (currentProject.practiceProgress?.scrollPercentage ?? 0);
+        console.log('[Timer Debug] Saving practiceTimeSeconds:', practiceSecondsRef.current);
         await dataService.updateProjectProgress(currentProject.id, {
           scrollPercentage,
           practiceTimeSeconds: practiceSecondsRef.current,
           updatedAt: new Date().toISOString(),
         });
-      } catch { /* 静默 */ }
+        console.log('[Timer Debug] Save success');
+      } catch (err) { console.error('[Timer Debug] Save failed:', err); }
     }
     if (currentProject && viewMode === 'edit') {
       try {
