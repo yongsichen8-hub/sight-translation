@@ -8,9 +8,6 @@ import { GlossaryManager } from './components/GlossaryManager';
 import { FlashcardReview } from './components/FlashcardReview';
 import { UserMenu } from './components/UserMenu/UserMenu';
 import { MigrationDialog } from './components/MigrationDialog/MigrationDialog';
-import { DailyBriefingPage } from './components/DailyBriefing/DailyBriefingPage';
-import { StudySessionPage } from './components/StudySession/StudySessionPage';
-import { TermLibraryPage } from './components/TermLibrary/TermLibraryPage';
 import { Toast, Button } from './components/common';
 import { initializeDatabase } from './db';
 import './App.css';
@@ -20,7 +17,7 @@ import './App.css';
  */
 function AppNav() {
   const { currentView } = useAppState();
-  const { goToProjects, goToGlossary, goToFlashcards, goToBriefing, goToTermLibrary } = useAppActions();
+  const { goToProjects, goToGlossary, goToFlashcards } = useAppActions();
   const { isAuthenticated, login } = useAuth();
 
   return (
@@ -46,18 +43,6 @@ function AppNav() {
           onClick={goToFlashcards}
         >
           复习
-        </button>
-        <button
-          className={`app-nav__link ${currentView === 'briefing' ? 'app-nav__link--active' : ''}`}
-          onClick={goToBriefing}
-        >
-          简报
-        </button>
-        <button
-          className={`app-nav__link ${currentView === 'term-library' ? 'app-nav__link--active' : ''}`}
-          onClick={goToTermLibrary}
-        >
-          术语库
         </button>
       </div>
       <div className="app-nav__user">
@@ -150,12 +135,6 @@ function AppContent() {
         return <GlossaryManager />;
       case 'flashcards':
         return <FlashcardReview />;
-      case 'briefing':
-        return <DailyBriefingPage />;
-      case 'study-session':
-        return <StudySessionPage />;
-      case 'term-library':
-        return <TermLibraryPage />;
       default:
         return <ProjectManager />;
     }
