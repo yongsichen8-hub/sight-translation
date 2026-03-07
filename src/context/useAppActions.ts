@@ -5,6 +5,7 @@
 
 import { useCallback } from 'react';
 import type { Project, OpenAIConfig } from '../types';
+import { dataService } from '../services/DataService';
 import { useAppDispatch } from './AppContext';
 import type { AppView, PracticeMode, ToastType, DataLoadStatus } from './AppContext';
 
@@ -70,8 +71,10 @@ export function useAppActions() {
    * 开始练习
    */
   const startPractice = useCallback(
-    (project: Project, mode: PracticeMode = 'zh-to-en') => {
-      dispatch({ type: 'START_PRACTICE', payload: { project, mode } });
+    async (project: Project, mode: PracticeMode = 'zh-to-en') => {
+      // 获取最新项目数据（含累计练习时间）
+      const fresh = await dataService.getProject(project.id);
+      dispatch({ type: 'START_PRACTICE', payload: { project: fresh ?? project, mode } });
     },
     [dispatch]
   );

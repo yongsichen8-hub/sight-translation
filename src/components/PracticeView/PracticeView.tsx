@@ -173,9 +173,11 @@ export function PracticeView() {
   }, [saveScrollPosition]);
 
   const handleExit = useCallback(async () => {
-    if (currentProject && leftColRef.current) {
+    if (currentProject) {
       try {
-        const scrollPercentage = calculateScrollPercentage(leftColRef.current as HTMLElement);
+        const scrollPercentage = leftColRef.current
+          ? calculateScrollPercentage(leftColRef.current as HTMLElement)
+          : (currentProject.practiceProgress?.scrollPercentage ?? 0);
         await dataService.updateProjectProgress(currentProject.id, {
           scrollPercentage,
           practiceTimeSeconds: practiceSecondsRef.current,
