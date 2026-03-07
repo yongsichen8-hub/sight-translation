@@ -19,6 +19,7 @@ export interface Project {
   chineseParagraphs: string[];
   englishParagraphs: string[];
   paragraphPairs: { index: number; chinese: string; english: string }[];
+  practiceProgress?: { scrollPercentage: number; updatedAt: string };
 }
 
 export interface Expression {

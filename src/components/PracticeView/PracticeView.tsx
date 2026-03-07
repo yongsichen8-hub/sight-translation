@@ -13,6 +13,7 @@ import { dataService } from '../../services/DataService';
 import { SaveExpressionPopup } from './SaveExpressionPopup';
 import { HighlightedText } from './HighlightedText';
 import { useProjectExpressions } from './useProjectExpressions';
+import { calculateScrollPercentage, restoreScrollPosition } from './scrollUtils';
 import type { ParagraphPair } from '../../types';
 import './PracticeView.css';
 
@@ -41,6 +42,7 @@ export function PracticeView() {
   
   const [saving, setSaving] = useState(false);
   const hasInitialized = useRef(false);
+  const [contentReady, setContentReady] = useState(false);
 
   // 高亮关键词
   const { chineseKeywords, englishKeywords, refresh: refreshExpressions } = useProjectExpressions(currentProject?.id);
@@ -58,8 +60,27 @@ export function PracticeView() {
       setChineseText(pairs.map(p => p.chinese).join('\n\n'));
       setEnglishText(pairs.map(p => p.english).join('\n\n'));
       hasInitialized.current = true;
+      setContentReady(true);
     }
   }, [currentProject]);
+
+  // 恢复练习进度（滚动位置）
+  useEffect(() => {
+    if (!contentReady || !currentProject?.practiceProgress) return;
+    const { scrollPercentage } = currentProject.practiceProgress;
+    if (scrollPercentage <= 0) return;
+
+    // 等待内容渲染完成后恢复
+    const timer = setTimeout(() => {
+      if (leftColRef.current) {
+        restoreScrollPosition(leftColRef.current as HTMLElement, scrollPercentage);
+      }
+      if (rightColRef.current) {
+        restoreScrollPosition(rightColRef.current as HTMLElement, scrollPercentage);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [contentReady, currentProject]);
 
   // 模式切换后恢复滚动位置
   useEffect(() => {
@@ -134,6 +155,17 @@ export function PracticeView() {
 
   // 退出时保存
   const handleExit = useCallback(async () => {
+    // 保存练习进度（滚动位置）
+    if (currentProject && leftColRef.current) {
+      try {
+        const scrollPercentage = calculateScrollPercentage(leftColRef.current as HTMLElement);
+        await dataService.updateProjectProgress(currentProject.id, {
+          scrollPercentage,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch { /* 静默处理，不阻断退出 */ }
+    }
+
     if (currentProject && viewMode === 'edit') {
       try {
         const pairs = buildPairs();

@@ -67,6 +67,7 @@ export async function getProjects(): Promise<Project[]> {
         ...p,
         createdAt: new Date(p.createdAt),
         updatedAt: new Date(p.updatedAt),
+        practiceProgress: p.practiceProgress ? { ...p.practiceProgress, updatedAt: new Date(p.practiceProgress.updatedAt) } : undefined,
       })) as Project[];
     } catch (error) {
       console.error('Failed to get projects from API:', error);
@@ -87,6 +88,7 @@ export async function getProject(id: string): Promise<Project | null> {
         ...project,
         createdAt: new Date(project.createdAt),
         updatedAt: new Date(project.updatedAt),
+        practiceProgress: project.practiceProgress ? { ...project.practiceProgress, updatedAt: new Date(project.practiceProgress.updatedAt) } : undefined,
       } as Project;
     } catch {
       return null;
@@ -192,6 +194,7 @@ export async function createProject(input: ProjectInput, openAIConfig?: OpenAICo
         ...created,
         createdAt: new Date(created.createdAt),
         updatedAt: new Date(created.updatedAt),
+        practiceProgress: created.practiceProgress ? { ...created.practiceProgress, updatedAt: new Date(created.practiceProgress.updatedAt) } : undefined,
       } as Project;
     }
 
@@ -234,6 +237,23 @@ export async function updateProjectParagraphs(id: string, paragraphPairs: Paragr
     paragraphPairs,
     chineseParagraphs: paragraphPairs.map(p => p.chinese),
     englishParagraphs: paragraphPairs.map(p => p.english),
+    updatedAt: new Date(),
+  });
+}
+
+/**
+ * 更新项目练习进度
+ */
+export async function updateProjectProgress(
+  id: string,
+  progress: { scrollPercentage: number; updatedAt: string }
+): Promise<void> {
+  if (_isAuthenticated) {
+    await apiClient.updateProject(id, { practiceProgress: progress } as Parameters<typeof apiClient.updateProject>[1]);
+    return;
+  }
+  await db.projects.update(id, {
+    practiceProgress: { scrollPercentage: progress.scrollPercentage, updatedAt: new Date(progress.updatedAt) },
     updatedAt: new Date(),
   });
 }
@@ -638,6 +658,7 @@ export const dataService = {
   getProject,
   createProject,
   updateProjectParagraphs,
+  updateProjectProgress,
   deleteProject,
   // 表达
   getExpressions,

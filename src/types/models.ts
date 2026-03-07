@@ -22,6 +22,17 @@ export interface ParagraphPair {
 }
 
 /**
+ * 练习进度数据
+ * 记录用户在练习视图中的滚动位置
+ */
+export interface ProgressData {
+  /** 滚动百分比，0 到 1 之间的小数 */
+  scrollPercentage: number;
+  /** 最后更新时间 */
+  updatedAt: Date;
+}
+
+/**
  * 项目数据模型
  * 包含同一文本的中英双语版本的练习单元
  */
@@ -44,6 +55,8 @@ export interface Project {
   englishParagraphs: string[];
   /** 语义匹配的段落对 */
   paragraphPairs: ParagraphPair[];
+  /** 练习进度数据（可选） */
+  practiceProgress?: ProgressData;
 }
 
 /**

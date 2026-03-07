@@ -9,7 +9,7 @@ import type { Project, OpenAIConfig } from '../types';
 /**
  * 应用视图类型
  */
-export type AppView = 'projects' | 'practice' | 'glossary' | 'flashcards' | 'align-editor';
+export type AppView = 'projects' | 'practice' | 'glossary' | 'flashcards' | 'align-editor' | 'news' | 'news-detail';
 
 /**
  * 练习模式类型

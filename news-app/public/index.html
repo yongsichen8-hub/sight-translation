@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>双语新闻平台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #1a1a1a; }
+    .app { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+    .header h1 { font-size: 1.5rem; font-weight: 600; cursor: pointer; }
+    .header .date { font-size: 0.875rem; color: #6b7280; }
+    .header-right { display: flex; gap: 0.5rem; align-items: center; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+    .btn-primary { background: #4a90d9; color: #fff; }
+    .btn-primary:hover { background: #3a7bc8; }
+    .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+    .btn-ghost { background: transparent; border: 1px solid #ddd; color: #555; }
+    .btn-ghost:hover { border-color: #4a90d9; color: #4a90d9; }
+    .btn-ghost.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+
+    /* Filters */
+    .filters { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+    /* Cards */
+    .card-list { display: flex; flex-direction: column; gap: 1rem; }
+    .card { padding: 1rem 1.25rem; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; cursor: pointer; transition: box-shadow 0.2s; }
+    .card:hover { border-color: #4a90d9; box-shadow: 0 2px 8px rgba(74,144,217,0.1); }
+    .card.checked { opacity: 0.6; border-left: 3px solid #10b981; }
+    .card.checked .card-title::after { content: ' ✅'; font-size: 0.8rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .domain-tag { padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; color: #fff; }
+    .domain-ai-tech { background: #8b5cf6; }
+    .domain-finance { background: #10b981; }
+    .domain-geopolitics { background: #f59e0b; }
+    .domain-automotive { background: #ef4444; }
+    .card-time { margin-left: auto; font-size: 0.75rem; color: #9ca3af; }
+    .card-title { margin: 0 0 0.75rem; font-size: 1rem; font-weight: 500; line-height: 1.5; }
+    .sources { display: flex; flex-direction: column; gap: 0.375rem; }
+    .source { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #6b7280; }
+    .source-lang { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; background: #f3f4f6; color: #374151; }
+    .source-name { font-weight: 500; color: #374151; }
+    .source-link { margin-left: auto; color: #4a90d9; text-decoration: none; font-size: 0.75rem; }
+    .source-link:hover { text-decoration: underline; }
+
+    /* Detail view - bilingual reader */
+    .view { display: none; }
+    .view.visible { display: block; }
+    .back-btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #555; font-size: 0.85rem; cursor: pointer; margin-bottom: 1rem; }
+    .back-btn:hover { border-color: #4a90d9; color: #4a90d9; }
+    .detail-topic { font-size: 1.25rem; font-weight: 600; line-height: 1.5; margin-bottom: 0.5rem; }
+    .detail-meta { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .bilingual-reader { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: #fff; }
+    .reader-panel { padding: 1.5rem; min-height: 300px; max-height: 80vh; overflow-y: auto; }
+    .reader-panel-zh { border-right: 1px solid #e0e0e0; }
+    .reader-panel-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid #e5e7eb; }
+    .reader-lang-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+    .reader-lang-badge-zh { background: #fef3c7; color: #92400e; }
+    .reader-lang-badge-en { background: #dbeafe; color: #1e40af; }
+    .reader-source-info { font-size: 0.8rem; color: #6b7280; }
+    .reader-source-info a { color: #4a90d9; text-decoration: none; margin-left: 0.5rem; }
+    .reader-source-info a:hover { text-decoration: underline; }
+    .reader-title { font-size: 1.1rem; font-weight: 600; line-height: 1.6; margin-bottom: 0.75rem; color: #1a1a1a; }
+    .reader-content { font-size: 0.95rem; line-height: 1.9; color: #374151; white-space: pre-wrap; user-select: text; }
+    .reader-panel-empty { display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.9rem; }
+
+    /* Save term popup */
+    .term-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 999; }
+    .term-popup { position: fixed; z-index: 1000; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); width: 320px; max-width: calc(100vw - 32px); }
+    .term-popup-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #e0e0e0; }
+    .term-popup-header h3 { margin: 0; font-size: 1rem; font-weight: 600; color: #333; }
+    .term-popup-close { background: none; border: none; font-size: 1.5rem; color: #666; cursor: pointer; padding: 0; line-height: 1; }
+    .term-popup-close:hover { color: #333; }
+    .term-popup-form { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .term-field { display: flex; flex-direction: column; gap: 4px; }
+    .term-field label { font-size: 0.75rem; font-weight: 500; color: #666; }
+    .term-field input, .term-field textarea { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: inherit; }
+    .term-field input:focus, .term-field textarea:focus { outline: none; border-color: #4a90d9; }
+    .term-popup-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid #e0e0e0; }
+
+    /* Glossary view */
+    .glossary-filters { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
+    .glossary-search { padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; width: 300px; max-width: 100%; }
+    .glossary-search:focus { outline: none; border-color: #4a90d9; }
+    .glossary-stats { color: #666; font-size: 0.875rem; }
+    .glossary-table-wrap { overflow-x: auto; border: 1px solid #e0e0e0; border-radius: 8px; }
+    .glossary-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .glossary-table th, .glossary-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+    .glossary-table th { background: #f8f9fa; font-weight: 600; color: #333; white-space: nowrap; }
+    .glossary-table tr:last-child td { border-bottom: none; }
+    .glossary-table tr:hover { background: #f8f9fa; }
+    .glossary-actions { white-space: nowrap; display: flex; gap: 4px; }
+    .glossary-btn { padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; background: #fff; color: #666; cursor: pointer; font-size: 0.75rem; }
+    .glossary-btn:hover { background: #f5f5f5; }
+    .glossary-btn-danger { color: #d32f2f; border-color: #ffcdd2; }
+    .glossary-btn-danger:hover { background: #ffebee; }
+    .glossary-edit-input { width: 100%; padding: 4px 8px; border: 1px solid #4a90d9; border-radius: 4px; font-size: 0.9rem; }
+    .glossary-edit-input:focus { outline: none; }
+
+    /* States */
+    .loading, .error, .empty { text-align: center; padding: 4rem 2rem; color: #6b7280; }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .retry-btn { margin-top: 1rem; padding: 8px 20px; border: none; border-radius: 6px; background: #4a90d9; color: #fff; cursor: pointer; }
+    .status-msg { padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem; }
+    .status-msg.success { background: #d1fae5; color: #065f46; }
+    .status-msg.error { background: #fee2e2; color: #991b1b; }
+    .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); padding: 10px 24px; border-radius: 8px; color: #fff; font-size: 0.85rem; z-index: 2000; animation: fadeInUp 0.3s; }
+    .toast-success { background: #10b981; }
+    .toast-error { background: #ef4444; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    /* Check-in button */
+    .checkin-bar { text-align: center; margin-top: 1.5rem; padding: 1rem 0; }
+    .btn-checkin { padding: 12px 40px; border: none; border-radius: 8px; background: #10b981; color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-checkin:hover { background: #059669; }
+    .btn-checkin.done { background: #9ca3af; cursor: default; }
+
+    @media (max-width: 768px) { .bilingual-reader { grid-template-columns: 1fr; } .reader-panel-zh { border-right: none; border-bottom: 1px solid #e0e0e0; } }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- List View -->
+    <div id="list-view" class="view visible">
+      <div class="header">
+        <h1 onclick="showListView()">📰 双语新闻</h1>
+        <span class="date" id="current-date"></span>
+        <div class="header-right">
+          <button class="btn btn-ghost" id="glossary-nav-btn" onclick="showGlossary()">📚 术语库</button>
+          <button class="btn btn-primary" id="trigger-btn" onclick="triggerFetch()">抓取新闻</button>
+        </div>
+      </div>
+      <div id="status-area"></div>
+      <div class="filters" id="filters"></div>
+      <div id="content"></div>
+    </div>
+
+    <!-- Detail View (bilingual reader) -->
+    <div id="detail-view" class="view">
+      <div class="header">
+        <button class="back-btn" onclick="showListView()">← 返回列表</button>
+        <button class="btn btn-ghost" onclick="showGlossary()">📚 术语库</button>
+      </div>
+      <div id="detail-content"></div>
+      <div class="checkin-bar" id="checkin-bar"></div>
+      <p style="text-align:center;color:#9ca3af;font-size:0.8rem;margin-top:1rem;">💡 选中文字后可保存为术语</p>
+    </div>
+
+    <!-- Glossary View -->
+    <div id="glossary-view" class="view">
+      <div class="header">
+        <h1>📚 术语库</h1>
+        <div class="header-right">
+          <button class="btn btn-ghost" onclick="exportGlossary()">导出 CSV</button>
+          <button class="btn btn-ghost" onclick="showListView()">返回新闻</button>
+        </div>
+      </div>
+      <div id="glossary-content"></div>
+    </div>
+  </div>
+
+  <!-- Term save popup (hidden by default) -->
+  <div id="term-popup-container"></div>
+  <div id="toast-container"></div>
+
+<script>
+// ===== Constants =====
+const DOMAIN_LABELS = { 'ai-tech': 'AI科技', finance: '金融经济', geopolitics: '国际政治', automotive: '汽车' };
+const DOMAINS = ['ai-tech', 'finance', 'geopolitics', 'automotive'];
+const GLOSSARY_KEY = 'news_glossary';
+const CHECKIN_KEY = 'news_checkins';
+
+// ===== State =====
+let newsItems = [];
+let selectedDomain = null;
+let currentDate = new Date().toISOString().slice(0, 10);
+let glossary = JSON.parse(localStorage.getItem(GLOSSARY_KEY) || '[]');
+let checkins = JSON.parse(localStorage.getItem(CHECKIN_KEY) || '{}'); // { [newsId]: timestamp }
+let editingTermId = null;
+let glossarySearch = '';
+let currentDetailId = null;
+
+document.getElementById('current-date').textContent = currentDate;
+
+// ===== View Navigation =====
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('visible'));
+  document.getElementById(id).classList.add('visible');
+}
+function showListView() { showView('list-view'); }
+function showGlossary() { showView('glossary-view'); renderGlossary(); }
+
+// ===== Filters =====
+const filtersEl = document.getElementById('filters');
+DOMAINS.forEach(d => {
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-ghost';
+  btn.textContent = DOMAIN_LABELS[d];
+  btn.onclick = () => { selectedDomain = selectedDomain === d ? null : d; renderFilters(); renderCards(); };
+  filtersEl.appendChild(btn);
+});
+
+function renderFilters() {
+  const btns = filtersEl.querySelectorAll('.btn');
+  btns.forEach((btn, i) => { btn.className = 'btn btn-ghost' + (selectedDomain === DOMAINS[i] ? ' active' : ''); });
+}
+
+// ===== Helpers =====
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function formatTime(iso) { return new Date(iso).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+function showToast(msg, type) {
+  const el = document.getElementById('toast-container');
+  el.innerHTML = '<div class="toast toast-' + type + '">' + esc(msg) + '</div>';
+  setTimeout(() => { el.innerHTML = ''; }, 2500);
+}
+
+// ===== Card List =====
+function renderCards() {
+  const el = document.getElementById('content');
+  let items = newsItems;
+  if (selectedDomain) items = items.filter(i => i.domain === selectedDomain || (i.secondaryDomains && i.secondaryDomains.includes(selectedDomain)));
+  if (items.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📰</div><p>暂无新闻数据</p><p style="margin-top:0.5rem;font-size:0.85rem">点击右上角"抓取新闻"按钮获取最新新闻</p></div>';
+    return;
+  }
+  // Sort: unchecked first within each domain, then checked
+  items = sortWithCheckins(items);
+  el.innerHTML = '<div class="card-list">' + items.map(item => {
+    const isChecked = !!checkins[item.id];
+    let sources = '';
+    if (item.chineseArticle) sources += '<div class="source"><span class="source-lang">中</span><span class="source-name">' + esc(item.chineseArticle.sourceName) + '</span><a class="source-link" href="' + esc(item.chineseArticle.url) + '" target="_blank" onclick="event.stopPropagation()">原文</a></div>';
+    if (item.englishArticle) sources += '<div class="source"><span class="source-lang">EN</span><span class="source-name">' + esc(item.englishArticle.sourceName) + '</span><a class="source-link" href="' + esc(item.englishArticle.url) + '" target="_blank" onclick="event.stopPropagation()">原文</a></div>';
+    return '<div class="card' + (isChecked ? ' checked' : '') + '" onclick="showDetail(\'' + item.id + '\')">' +
+      '<div class="card-header"><span class="domain-tag domain-' + item.domain + '">' + DOMAIN_LABELS[item.domain] + '</span>' +
+      '<span class="card-time">' + formatTime(item.createdAt) + '</span></div>' +
+      '<h2 class="card-title">' + esc(item.topicSummary) + '</h2>' +
+      '<div class="sources">' + sources + '</div></div>';
+  }).join('') + '</div>';
+}
+
+/** Sort items: within each domain group, unchecked items come first */
+function sortWithCheckins(items) {
+  // Group by domain preserving original order
+  const domainOrder = [];
+  const groups = {};
+  items.forEach(item => {
+    if (!groups[item.domain]) { groups[item.domain] = []; domainOrder.push(item.domain); }
+    groups[item.domain].push(item);
+  });
+  // Within each group, unchecked first
+  const result = [];
+  domainOrder.forEach(d => {
+    const g = groups[d];
+    const unchecked = g.filter(i => !checkins[i.id]);
+    const checked = g.filter(i => !!checkins[i.id]);
+    result.push(...unchecked, ...checked);
+  });
+  return result;
+}
+
+// ===== Detail View (Bilingual Reader) =====
+function showDetail(id) {
+  const item = newsItems.find(i => i.id === id);
+  if (!item) return;
+  currentDetailId = id;
+  showView('detail-view');
+
+  function renderPanel(article, langClass, badge, label) {
+    if (!article) return '<div class="reader-panel reader-panel-empty"><p>暂无' + label + '报道</p></div>';
+    const bodyText = article.content || article.summary || '';
+    return '<div class="reader-panel ' + langClass + '">' +
+      '<div class="reader-panel-header"><span class="reader-lang-badge reader-lang-badge-' + (langClass.includes('zh') ? 'zh' : 'en') + '">' + badge + '</span>' +
+      '<div class="reader-source-info"><span>' + esc(article.sourceName) + '</span> · <span>' + formatTime(article.publishedAt) + '</span><a href="' + esc(article.url) + '" target="_blank">原文 ↗</a></div></div>' +
+      '<h3 class="reader-title">' + esc(article.title) + '</h3>' +
+      '<div class="reader-content">' + esc(bodyText) + '</div></div>';
+  }
+
+  document.getElementById('detail-content').innerHTML =
+    '<h1 class="detail-topic">' + esc(item.topicSummary) + '</h1>' +
+    '<div class="detail-meta"><span class="domain-tag domain-' + item.domain + '">' + DOMAIN_LABELS[item.domain] + '</span></div>' +
+    '<div class="bilingual-reader">' +
+    renderPanel(item.chineseArticle, 'reader-panel-zh', '中', '中文') +
+    renderPanel(item.englishArticle, 'reader-panel-en', 'EN', 'English') +
+    '</div>';
+
+  renderCheckinButton(id);
+}
+
+function renderCheckinButton(id) {
+  const bar = document.getElementById('checkin-bar');
+  const isChecked = !!checkins[id];
+  if (isChecked) {
+    bar.innerHTML = '<button class="btn-checkin done">已打卡 ✅</button>';
+  } else {
+    bar.innerHTML = '<button class="btn-checkin" onclick="doCheckin(\'' + id + '\')">📝 打卡</button>';
+  }
+}
+
+function doCheckin(id) {
+  checkins[id] = new Date().toISOString();
+  localStorage.setItem(CHECKIN_KEY, JSON.stringify(checkins));
+  renderCheckinButton(id);
+  renderCards(); // Re-render list so checked item moves to bottom of its domain
+  showToast('已打卡', 'success');
+}
+
+// ===== Text Selection → Save Term =====
+document.addEventListener('mouseup', function(e) {
+  // Only in detail view
+  if (!document.getElementById('detail-view').classList.contains('visible')) return;
+  const sel = window.getSelection();
+  const text = sel ? sel.toString().trim() : '';
+  if (!text || text.length < 1 || text.length > 200) return;
+  // Don't trigger on popup itself
+  if (e.target.closest('.term-popup') || e.target.closest('.term-overlay')) return;
+
+  const isChinese = (text.match(/[\u4e00-\u9fa5]/g) || []).length / text.length > 0.3;
+  showTermPopup(text, isChinese, e.clientX, e.clientY);
+});
+
+function showTermPopup(text, isChinese, x, y) {
+  const container = document.getElementById('term-popup-container');
+  const zh = isChinese ? text : '';
+  const en = isChinese ? '' : text;
+
+  // Adjust position
+  let left = Math.min(x, window.innerWidth - 340);
+  let top = y + 10;
+  if (top + 320 > window.innerHeight) top = y - 330;
+
+  container.innerHTML =
+    '<div class="term-overlay" onclick="closeTermPopup()"></div>' +
+    '<div class="term-popup" style="left:' + left + 'px;top:' + top + 'px">' +
+      '<div class="term-popup-header"><h3>保存术语</h3><button class="term-popup-close" onclick="closeTermPopup()">×</button></div>' +
+      '<div class="term-popup-form">' +
+        '<div class="term-field"><label>中文</label><input id="term-zh" type="text" value="' + esc(zh) + '" placeholder="输入中文术语"></div>' +
+        '<div class="term-field"><label>英文</label><input id="term-en" type="text" value="' + esc(en) + '" placeholder="输入英文术语"></div>' +
+        '<div class="term-field"><label>备注（可选）</label><textarea id="term-notes" rows="2" placeholder="添加备注..."></textarea></div>' +
+      '</div>' +
+      '<div class="term-popup-actions">' +
+        '<button class="btn btn-ghost" onclick="closeTermPopup()">取消</button>' +
+        '<button class="btn btn-primary" onclick="saveTerm()">保存</button>' +
+      '</div>' +
+    '</div>';
+
+  // Focus the empty field
+  setTimeout(() => {
+    const target = isChinese ? document.getElementById('term-en') : document.getElementById('term-zh');
+    if (target) target.focus();
+  }, 50);
+}
+
+function closeTermPopup() {
+  document.getElementById('term-popup-container').innerHTML = '';
+}
+
+function saveTerm() {
+  const zh = document.getElementById('term-zh').value.trim();
+  const en = document.getElementById('term-en').value.trim();
+  const notes = document.getElementById('term-notes').value.trim();
+  if (!zh || !en) { showToast('请填写中英文术语', 'error'); return; }
+
+  glossary.push({ id: genId(), chinese: zh, english: en, notes: notes, createdAt: new Date().toISOString() });
+  localStorage.setItem(GLOSSARY_KEY, JSON.stringify(glossary));
+  closeTermPopup();
+  showToast('术语已保存', 'success');
+  window.getSelection()?.removeAllRanges();
+}
+
+// ===== Glossary View =====
+function renderGlossary() {
+  const el = document.getElementById('glossary-content');
+  if (glossary.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📚</div><p>术语库为空</p><p style="margin-top:0.5rem;font-size:0.85rem">在阅读新闻时选中文字即可保存术语</p></div>';
+    return;
+  }
+
+  const keyword = glossarySearch.toLowerCase();
+  const filtered = keyword
+    ? glossary.filter(t => t.chinese.toLowerCase().includes(keyword) || t.english.toLowerCase().includes(keyword) || (t.notes || '').toLowerCase().includes(keyword))
+    : glossary;
+
+  let html = '<div class="glossary-filters">' +
+    '<input class="glossary-search" type="text" placeholder="搜索术语..." value="' + esc(glossarySearch) + '" oninput="glossarySearch=this.value;renderGlossary()">' +
+    '<span class="glossary-stats">共 ' + filtered.length + ' 条术语' + (filtered.length !== glossary.length ? ' / 总计 ' + glossary.length + ' 条' : '') + '</span></div>';
+
+  if (filtered.length === 0) {
+    html += '<div class="empty"><div class="empty-icon">🔍</div><p>没有找到匹配的术语</p></div>';
+  } else {
+    html += '<div class="glossary-table-wrap"><table class="glossary-table"><thead><tr><th>中文</th><th>英文</th><th>备注</th><th>操作</th></tr></thead><tbody>';
+    for (const t of filtered) {
+      if (editingTermId === t.id) {
+        html += '<tr>' +
+          '<td><input class="glossary-edit-input" id="edit-zh" value="' + esc(t.chinese) + '"></td>' +
+          '<td><input class="glossary-edit-input" id="edit-en" value="' + esc(t.english) + '"></td>' +
+          '<td><input class="glossary-edit-input" id="edit-notes" value="' + esc(t.notes || '') + '"></td>' +
+          '<td class="glossary-actions"><button class="glossary-btn" style="background:#4a90d9;color:#fff;border-color:#4a90d9" onclick="saveEditTerm(\'' + t.id + '\')">保存</button><button class="glossary-btn" onclick="cancelEditTerm()">取消</button></td></tr>';
+      } else {
+        html += '<tr><td>' + esc(t.chinese) + '</td><td>' + esc(t.english) + '</td><td style="color:#666;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(t.notes || '-') + '</td>' +
+          '<td class="glossary-actions"><button class="glossary-btn" onclick="startEditTerm(\'' + t.id + '\')">编辑</button><button class="glossary-btn glossary-btn-danger" onclick="deleteTerm(\'' + t.id + '\')">删除</button></td></tr>';
+      }
+    }
+    html += '</tbody></table></div>';
+  }
+  el.innerHTML = html;
+}
+
+function startEditTerm(id) { editingTermId = id; renderGlossary(); }
+function cancelEditTerm() { editingTermId = null; renderGlossary(); }
+
+function saveEditTerm(id) {
+  const zh = document.getElementById('edit-zh').value.trim();
+  const en = document.getElementById('edit-en').value.trim();
+  const notes = document.getElementById('edit-notes').value.trim();
+  if (!zh || !en) { showToast('中英文不能为空', 'error'); return; }
+  const idx = glossary.findIndex(t => t.id === id);
+  if (idx >= 0) { glossary[idx].chinese = zh; glossary[idx].english = en; glossary[idx].notes = notes; }
+  localStorage.setItem(GLOSSARY_KEY, JSON.stringify(glossary));
+  editingTermId = null;
+  renderGlossary();
+  showToast('术语已更新', 'success');
+}
+
+function deleteTerm(id) {
+  if (!confirm('确定删除这条术语？')) return;
+  glossary = glossary.filter(t => t.id !== id);
+  localStorage.setItem(GLOSSARY_KEY, JSON.stringify(glossary));
+  renderGlossary();
+  showToast('术语已删除', 'success');
+}
+
+function exportGlossary() {
+  if (glossary.length === 0) { showToast('术语库为空', 'error'); return; }
+  const header = '中文,英文,备注';
+  const rows = glossary.map(t => '"' + (t.chinese||'').replace(/"/g,'""') + '","' + (t.english||'').replace(/"/g,'""') + '","' + (t.notes||'').replace(/"/g,'""') + '"');
+  const csv = '\uFEFF' + header + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '术语库_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  showToast('已导出 ' + glossary.length + ' 条术语', 'success');
+}
+
+// ===== Fetch News =====
+async function fetchNews() {
+  const el = document.getElementById('content');
+  el.innerHTML = '<div class="loading">加载新闻中...</div>';
+  try {
+    const res = await fetch('/api/news/daily?date=' + currentDate);
+    const data = await res.json();
+    if (data.success && data.data) {
+      newsItems = data.data.items || [];
+      if (data.data.date) document.getElementById('current-date').textContent = data.data.date;
+    } else { newsItems = []; }
+    renderCards();
+  } catch (e) {
+    el.innerHTML = '<div class="error"><p>加载失败: ' + esc(e.message) + '</p><button class="retry-btn" onclick="fetchNews()">重试</button></div>';
+  }
+}
+
+async function triggerFetch() {
+  const btn = document.getElementById('trigger-btn');
+  const statusArea = document.getElementById('status-area');
+  btn.disabled = true; btn.textContent = '抓取中...';
+  statusArea.innerHTML = '<div class="status-msg" style="background:#dbeafe;color:#1e40af">正在从各新闻源抓取文章、全文及中英文匹配，请稍候（约1-2分钟）...</div>';
+  try {
+    const res = await fetch('/api/news/trigger', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      const d = data.data;
+      if (d.newsItemsGenerated === 0) {
+        statusArea.innerHTML = '<div class="status-msg" style="background:#fef3c7;color:#92400e">未能匹配到中英文配对新闻。<br><small>可能原因：搜索服务暂时不可用。请稍后重试。</small></div>';
+      } else {
+        statusArea.innerHTML = '<div class="status-msg success">更新完成！生成 ' + d.newsItemsGenerated + ' 条双语新闻</div>';
+      }
+      await fetchNews();
+    } else { statusArea.innerHTML = '<div class="status-msg error">抓取失败: ' + esc(data.error?.message || '未知错误') + '</div>'; }
+  } catch (e) { statusArea.innerHTML = '<div class="status-msg error">抓取失败: ' + esc(e.message) + '</div>'; }
+  btn.disabled = false; btn.textContent = '抓取新闻';
+}
+
+// Keyboard shortcut: Escape to close popup
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeTermPopup();
+});
+
+// Initial load
+fetchNews();
+</script>
+</body>
+</html>
