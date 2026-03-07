@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback } from 'react';
 import { AppProvider, useAppState } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useAppActions } from './context/useAppActions';
@@ -6,14 +6,11 @@ import { ProjectManager } from './components/ProjectManager';
 import { PracticeView } from './components/PracticeView';
 import { GlossaryManager } from './components/GlossaryManager';
 import { FlashcardReview } from './components/FlashcardReview';
-import { NewsFeed } from './components/NewsFeed/NewsFeed';
-import { NewsDetail } from './components/NewsFeed/NewsDetail';
 import { LoginPage } from './components/LoginPage';
 import { UserMenu } from './components/UserMenu';
 import { MigrationDialog } from './components/MigrationDialog';
 import { Toast, Button } from './components/common';
 import { initializeDatabase } from './db';
-import type { NewsItem } from './types/news';
 import './App.css';
 
 /**
@@ -21,7 +18,7 @@ import './App.css';
  */
 function AppNav() {
   const { currentView } = useAppState();
-  const { goToProjects, goToGlossary, goToFlashcards, goToNews } = useAppActions();
+  const { goToProjects, goToGlossary, goToFlashcards } = useAppActions();
 
   return (
     <nav className="app-nav">
@@ -47,12 +44,6 @@ function AppNav() {
         >
           复习
         </button>
-        <button
-          className={`app-nav__link ${currentView === 'news' || currentView === 'news-detail' ? 'app-nav__link--active' : ''}`}
-          onClick={goToNews}
-        >
-          新闻
-        </button>
       </div>
       <div className="app-nav__user">
         <UserMenu />
@@ -66,8 +57,7 @@ function AppNav() {
  */
 function AppContent() {
   const { currentView, dataLoadStatus, error } = useAppState();
-  const { setDataLoadStatus, setError, useEmptyData, retryDataLoad, setView } = useAppActions();
-  const [selectedNewsItem, setSelectedNewsItem] = useState<NewsItem | null>(null);
+  const { setDataLoadStatus, setError, useEmptyData, retryDataLoad } = useAppActions();
 
   /**
    * 初始化数据库连接
@@ -151,32 +141,6 @@ function AppContent() {
         return <GlossaryManager />;
       case 'flashcards':
         return <FlashcardReview />;
-      case 'news':
-        return (
-          <NewsFeed
-            onSelectItem={(item) => {
-              setSelectedNewsItem(item);
-              setView('news-detail');
-            }}
-          />
-        );
-      case 'news-detail':
-        return selectedNewsItem ? (
-          <NewsDetail
-            item={selectedNewsItem}
-            onBack={() => {
-              setSelectedNewsItem(null);
-              setView('news');
-            }}
-          />
-        ) : (
-          <NewsFeed
-            onSelectItem={(item) => {
-              setSelectedNewsItem(item);
-              setView('news-detail');
-            }}
-          />
-        );
       default:
         return <ProjectManager />;
     }

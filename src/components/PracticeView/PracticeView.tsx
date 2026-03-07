@@ -71,20 +71,47 @@ export function PracticeView() {
     const { scrollPercentage } = currentProject.practiceProgress;
     if (scrollPercentage <= 0) return;
 
-    // 多次尝试恢复，确保内容完全渲染
-    const attempts = [100, 300, 600];
-    const timers = attempts.map(delay =>
-      setTimeout(() => {
-        if (leftColRef.current) {
-          restoreScrollPosition(leftColRef.current as HTMLElement, scrollPercentage);
-        }
-        if (rightColRef.current) {
-          restoreScrollPosition(rightColRef.current as HTMLElement, scrollPercentage);
-        }
+    const el = leftColRef.current as HTMLElement | null;
+    const elRight = rightColRef.current as HTMLElement | null;
+    if (!el) return;
+
+    // 使用 ResizeObserver 等待内容完全渲染后再恢复
+    let restored = false;
+    const doRestore = () => {
+      if (restored) return;
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      if (maxScroll <= 0) return; // 内容还没渲染完或不可滚动
+      restored = true;
+      observer?.disconnect();
+      restoreScrollPosition(el, scrollPercentage);
+      if (elRight) restoreScrollPosition(elRight, scrollPercentage);
+      setScrollPercent(Math.round(scrollPercentage * 100));
+    };
+
+    // 先尝试立即恢复
+    requestAnimationFrame(doRestore);
+
+    // 如果内容还没渲染完，用 ResizeObserver 监听变化
+    const observer = new ResizeObserver(() => {
+      requestAnimationFrame(doRestore);
+    });
+    observer.observe(el);
+
+    // 兜底：最多等 2 秒
+    const fallback = setTimeout(() => {
+      if (!restored) {
+        restored = true;
+        observer.disconnect();
+        restoreScrollPosition(el, scrollPercentage);
+        if (elRight) restoreScrollPosition(elRight, scrollPercentage);
         setScrollPercent(Math.round(scrollPercentage * 100));
-      }, delay)
-    );
-    return () => timers.forEach(clearTimeout);
+      }
+    }, 2000);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+    };
   }, [contentReady, currentProject]);
 
   // 实时追踪滚动进度

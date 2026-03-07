@@ -47,13 +47,6 @@ export function useAppActions() {
   }, [dispatch]);
 
   /**
-   * 导航到新闻列表
-   */
-  const goToNews = useCallback(() => {
-    dispatch({ type: 'SET_VIEW', payload: 'news' });
-  }, [dispatch]);
-
-  /**
    * 设置当前项目
    */
   const setProject = useCallback(
@@ -251,7 +244,6 @@ export function useAppActions() {
     goToProjects,
     goToGlossary,
     goToFlashcards,
-    goToNews,
     // 项目管理
     setProject,
     // 练习相关
