@@ -19,6 +19,18 @@ export interface ProjectListProps {
 }
 
 /**
+ * 将秒数格式化为 HH:MM:SS 字符串
+ * @param seconds 非负整数秒数
+ * @returns 格式化后的时间字符串，各部分零补齐两位
+ */
+export function formatTime(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+/**
  * ProjectList 组件
  * 显示项目列表，支持删除项目和开始练习
  */
@@ -184,6 +196,15 @@ export function ProjectList({ onCreateClick }: ProjectListProps) {
                   创建于 {formatDate(project.createdAt)}
                 </span>
               </div>
+
+              {project.checkedIn && (
+                <div className="project-card__checkin-info">
+                  <span className="project-card__checkin-badge">✅ 打卡完成</span>
+                  <span className="project-card__checkin-time">
+                    用时 {formatTime(project.practiceProgress?.practiceTimeSeconds ?? 0)}
+                  </span>
+                </div>
+              )}
 
               <div className="project-card__practice-buttons">
                 <Button

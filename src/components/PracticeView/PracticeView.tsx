@@ -40,6 +40,10 @@ export function PracticeView() {
   const hasInitialized = useRef(false);
   const [contentReady, setContentReady] = useState(false);
 
+  // 打卡状态
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [checkingIn, setCheckingIn] = useState(false);
+
   // 累计练习计时
   const [practiceSeconds, setPracticeSeconds] = useState(0);
   const practiceSecondsRef = useRef(0);
@@ -71,17 +75,19 @@ export function PracticeView() {
       hasInitialized.current = true;
       setContentReady(true);
 
-      // 异步获取最新项目数据以恢复累计练习时间
+      // 异步获取最新项目数据以恢复累计练习时间和打卡状态
       dataService.getProject(currentProject.id).then(fresh => {
         const savedTime = fresh?.practiceProgress?.practiceTimeSeconds ?? 0;
         setPracticeSeconds(savedTime);
         practiceSecondsRef.current = savedTime;
+        setIsCheckedIn(fresh?.checkedIn ?? false);
       }).catch(() => { /* 静默 */ });
     }
   }, [currentProject]);
 
-  // 练习计时器：每秒递增，每30秒自动保存
+  // 练习计时器：每秒递增，每30秒自动保存（已打卡项目不启动）
   useEffect(() => {
+    if (isCheckedIn) return; // 已打卡，不启动计时器，不自动保存
     const timer = setInterval(() => {
       setPracticeSeconds(prev => {
         const next = prev + 1;
@@ -101,7 +107,7 @@ export function PracticeView() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [currentProject]);
+  }, [currentProject, isCheckedIn]);
 
   // 初始化上次进度百分比显示
   useEffect(() => {
@@ -260,6 +266,31 @@ export function PracticeView() {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
+  // 打卡处理
+  const handleCheckIn = useCallback(async () => {
+    if (!currentProject || checkingIn) return;
+    setCheckingIn(true);
+    try {
+      await dataService.checkInProject(currentProject.id);
+      // 停止计时器（通过设置 isCheckedIn）
+      setIsCheckedIn(true);
+      // 保存最终累计时间
+      const scrollPct = leftColRef.current
+        ? calculateScrollPercentage(leftColRef.current as HTMLElement)
+        : (currentProject.practiceProgress?.scrollPercentage ?? 0);
+      await dataService.updateProjectProgress(currentProject.id, {
+        scrollPercentage: scrollPct,
+        practiceTimeSeconds: practiceSecondsRef.current,
+        updatedAt: new Date().toISOString(),
+      }).catch(() => { /* 静默 */ });
+      showSuccess('打卡成功');
+    } catch {
+      showError('打卡失败，请重试');
+    } finally {
+      setCheckingIn(false);
+    }
+  }, [currentProject, checkingIn, showSuccess, showError]);
+
   if (!currentProject) {
     return (
       <div className="pv">
@@ -380,6 +411,23 @@ export function PracticeView() {
           )}
         </div>
       </div>
+
+      {/* 打卡按钮 / 已完成状态（仅练习模式） */}
+      {viewMode === 'practice' && (
+        <div className="pv__checkin-bar">
+          {isCheckedIn ? (
+            <div className="pv__checkin-done">✅ 已打卡完成</div>
+          ) : (
+            <button
+              className="pv__checkin-btn"
+              onClick={handleCheckIn}
+              disabled={checkingIn}
+            >
+              {checkingIn ? '打卡中...' : '打卡'}
+            </button>
+          )}
+        </div>
+      )}
 
       {selectedTextState && (
         <SaveExpressionPopup

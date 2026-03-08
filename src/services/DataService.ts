@@ -68,6 +68,7 @@ export async function getProjects(): Promise<Project[]> {
         createdAt: new Date(p.createdAt),
         updatedAt: new Date(p.updatedAt),
         practiceProgress: p.practiceProgress ? { ...p.practiceProgress, updatedAt: new Date(p.practiceProgress.updatedAt) } : undefined,
+        checkedInAt: p.checkedInAt ? new Date(p.checkedInAt) : undefined,
       })) as Project[];
     } catch (error) {
       console.error('Failed to get projects from API:', error);
@@ -89,6 +90,7 @@ export async function getProject(id: string): Promise<Project | null> {
         createdAt: new Date(project.createdAt),
         updatedAt: new Date(project.updatedAt),
         practiceProgress: project.practiceProgress ? { ...project.practiceProgress, updatedAt: new Date(project.practiceProgress.updatedAt) } : undefined,
+        checkedInAt: project.checkedInAt ? new Date(project.checkedInAt) : undefined,
       } as Project;
     } catch {
       return null;
@@ -282,6 +284,22 @@ export async function deleteProject(id: string): Promise<void> {
   }
   await db.expressions.where('projectId').equals(id).delete();
   await db.projects.delete(id);
+}
+
+/**
+ * 打卡项目
+ */
+export async function checkInProject(id: string): Promise<void> {
+  if (_isAuthenticated) {
+    await apiClient.checkInProject(id);
+    return;
+  }
+  // 本地模式：直接更新 IndexedDB
+  await db.projects.update(id, {
+    checkedIn: true,
+    checkedInAt: new Date(),
+    updatedAt: new Date(),
+  });
 }
 
 // 辅助函数
@@ -664,6 +682,7 @@ export const dataService = {
   updateProjectParagraphs,
   updateProjectProgress,
   deleteProject,
+  checkInProject,
   // 表达
   getExpressions,
   saveExpression,

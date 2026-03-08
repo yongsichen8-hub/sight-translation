@@ -132,6 +132,35 @@ export class DataService {
   }
 
   /**
+   * 打卡项目
+   */
+  async checkInProject(userId: string, projectId: string): Promise<Project> {
+    const data = await fileStorageService.readJson<ProjectsFile>(userId, 'projects.json');
+    const index = data.projects.findIndex(p => p.id === projectId);
+
+    if (index === -1) {
+      throw new Error('NOT_FOUND: 项目不存在');
+    }
+
+    // 幂等：已打卡则直接返回
+    if (data.projects[index].checkedIn) {
+      return data.projects[index];
+    }
+
+    const now = new Date().toISOString();
+    data.projects[index] = {
+      ...data.projects[index],
+      checkedIn: true,
+      checkedInAt: now,
+      updatedAt: now,
+    };
+
+    await fileStorageService.writeJson(userId, 'projects.json', data);
+    return data.projects[index];
+  }
+
+
+  /**
    * 删除项目
    */
   async deleteProject(userId: string, projectId: string): Promise<void> {

@@ -26,6 +26,8 @@ export interface Project {
   englishParagraphs: string[];
   paragraphPairs: ParagraphPair[];
   practiceProgress?: { scrollPercentage: number; practiceTimeSeconds?: number; updatedAt: string };
+  checkedIn?: boolean;
+  checkedInAt?: string;
 }
 
 export interface ProjectInput {

@@ -169,4 +169,39 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/projects/:id/checkin
+ * 打卡项目
+ */
+router.post('/:id/checkin', async (req: Request, res: Response) => {
+  try {
+    await dataService.checkInProject(req.user!.feishuUserId, req.params.id);
+    res.json({
+      success: true,
+      data: { message: '打卡成功' },
+    });
+  } catch (error) {
+    const message = (error as Error).message;
+
+    if (message.includes('NOT_FOUND')) {
+      res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: '项目不存在',
+        },
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: '打卡失败',
+      },
+    });
+  }
+});
+
 export default router;

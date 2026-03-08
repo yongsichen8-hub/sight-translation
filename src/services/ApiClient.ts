@@ -20,6 +20,8 @@ export interface Project {
   englishParagraphs: string[];
   paragraphPairs: { index: number; chinese: string; english: string }[];
   practiceProgress?: { scrollPercentage: number; practiceTimeSeconds?: number; updatedAt: string };
+  checkedIn?: boolean;
+  checkedInAt?: string;
 }
 
 export interface Expression {
@@ -147,6 +149,11 @@ class ApiClient {
   async deleteProject(id: string): Promise<void> {
     await this.request(`/api/projects/${id}`, { method: 'DELETE' });
   }
+
+  async checkInProject(id: string): Promise<void> {
+    await this.request(`/api/projects/${id}/checkin`, { method: 'POST' });
+  }
+
 
   // ==================== 表达相关 ====================
 

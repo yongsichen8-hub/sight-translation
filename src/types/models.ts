@@ -59,6 +59,10 @@ export interface Project {
   paragraphPairs: ParagraphPair[];
   /** 练习进度数据（可选） */
   practiceProgress?: ProgressData;
+  /** 是否已打卡完成 */
+  checkedIn?: boolean;
+  /** 打卡完成时间 */
+  checkedInAt?: Date;
 }
 
 /**
