@@ -52,6 +52,19 @@ export function ProjectList({ onCreateClick }: ProjectListProps) {
       setLoading(true);
       setError(null);
       const data = await dataService.getProjects();
+      // 排序：未打卡在前（按创建时间倒序），已打卡在后（按打卡时间倒序，越早打卡越靠下）
+      data.sort((a, b) => {
+        if (a.checkedIn && !b.checkedIn) return 1;
+        if (!a.checkedIn && b.checkedIn) return -1;
+        if (a.checkedIn && b.checkedIn) {
+          // 都已打卡：打卡时间越晚的排前面，越早的排后面
+          const aTime = a.checkedInAt ? new Date(a.checkedInAt).getTime() : 0;
+          const bTime = b.checkedInAt ? new Date(b.checkedInAt).getTime() : 0;
+          return bTime - aTime;
+        }
+        // 都未打卡：按创建时间倒序
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
       setProjects(data);
     } catch (err) {
       setError('加载项目列表失败，请刷新页面重试');
