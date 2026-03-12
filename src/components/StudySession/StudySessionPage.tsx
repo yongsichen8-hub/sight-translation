@@ -5,7 +5,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Loading } from '../common';
-import type { StudySession, NewsEntry, BriefingDomain, CreateTermInput } from '../../types/briefing';
+import type { StudySession, BriefingDomain, CreateTermInput } from '../../types/briefing';
+
+/** Minimal shape needed when creating a session from a news entry */
+interface NewsEntryInput {
+  id: string;
+  domain: BriefingDomain;
+  chineseTitle: string;
+  content: string;
+}
 import { briefingApiClient } from '../../services/BriefingApiClient';
 import { ComparisonView } from './ComparisonView';
 import { TermEditForm } from './TermEditForm';
@@ -14,7 +22,7 @@ import './StudySession.css';
 
 export interface StudySessionPageProps {
   sessionId?: string;
-  newsEntry?: NewsEntry;
+  newsEntry?: NewsEntryInput;
   onBack?: () => void;
 }
 

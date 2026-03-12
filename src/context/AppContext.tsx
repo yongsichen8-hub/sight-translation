@@ -5,12 +5,11 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import type { Project, OpenAIConfig } from '../types';
-import type { NewsEntry } from '../types/briefing';
 
 /**
  * 应用视图类型
  */
-export type AppView = 'projects' | 'practice' | 'glossary' | 'flashcards' | 'align-editor' | 'briefing' | 'study-session' | 'term-library' | 'notebooks' | 'notebook-workspace';
+export type AppView = 'projects' | 'practice' | 'glossary' | 'flashcards' | 'align-editor' | 'study-session' | 'term-library' | 'notebooks' | 'notebook-workspace';
 
 /**
  * 练习模式类型
@@ -63,8 +62,6 @@ export interface AppState {
   useEmptyData: boolean;
   /** OpenAI 配置 */
   openAIConfig: OpenAIConfig | null;
-  /** 当前研习的新闻条目（从简报页面传入） */
-  studyNewsEntry: NewsEntry | null;
   /** 当前选中的笔记本项目 ID */
   selectedNotebookId: string | null;
 }
@@ -93,8 +90,6 @@ export type AppAction =
   | { type: 'RETRY_DATA_LOAD' }
   | { type: 'SET_OPENAI_CONFIG'; payload: OpenAIConfig | null }
   | { type: 'START_ALIGN_EDITOR'; payload: { project: Project; mode: PracticeMode } }
-  | { type: 'START_STUDY_SESSION'; payload: NewsEntry }
-  | { type: 'EXIT_STUDY_SESSION' }
   | { type: 'GO_TO_NOTEBOOK_WORKSPACE'; payload: string };
 
 /**
@@ -111,7 +106,6 @@ export const initialState: AppState = {
   dataLoadStatus: 'idle',
   useEmptyData: false,
   openAIConfig: null,
-  studyNewsEntry: null,
   selectedNotebookId: null,
 };
 
@@ -285,21 +279,6 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         practiceMode: action.payload.mode,
         visibleTranslations: new Set<number>(),
         error: null,
-      };
-
-    case 'START_STUDY_SESSION':
-      return {
-        ...state,
-        currentView: 'study-session',
-        studyNewsEntry: action.payload,
-        error: null,
-      };
-
-    case 'EXIT_STUDY_SESSION':
-      return {
-        ...state,
-        currentView: 'briefing',
-        studyNewsEntry: null,
       };
 
     case 'GO_TO_NOTEBOOK_WORKSPACE':

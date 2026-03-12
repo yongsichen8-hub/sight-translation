@@ -1,4 +1,4 @@
-// Briefing domain categories (coexists with legacy NewsDomain)
+// Domain categories for study sessions and terms
 export type BriefingDomain = 'ai-tech' | 'economy' | 'politics';
 
 export const BRIEFING_DOMAIN_LABELS: Record<BriefingDomain, string> = {
@@ -6,40 +6,6 @@ export const BRIEFING_DOMAIN_LABELS: Record<BriefingDomain, string> = {
   'economy': '国际经济/金融经济',
   'politics': '国际政治',
 };
-
-// Source fetch strategy
-export type BriefingSourceType = 'rss' | 'thepaper-api' | 'wallstreetcn-api' | 'huanqiu-scrape';
-
-// A single news entry within a daily briefing
-export interface NewsEntry {
-  id: string;
-  domain: BriefingDomain;
-  chineseTitle: string;
-  englishTitle: string;
-  summary: string;
-  content: string;
-  sourceUrl: string;
-  sourceName: string;
-  publishedAt: string;
-}
-
-// Result of a briefing generation run
-export interface BriefingUpdateResult {
-  success: boolean;
-  completedAt: string;
-  articlesFetched: number;
-  entriesGenerated: number;
-  retryCount: number;
-  errors: string[];
-}
-
-// Daily briefing output
-export interface DailyBriefing {
-  date: string;
-  entries: NewsEntry[];
-  generatedAt: string;
-  updateResult: BriefingUpdateResult;
-}
 
 // A bilingual study session linked to a news entry
 export interface StudySession {
@@ -104,25 +70,6 @@ export interface TermFilters {
 export interface TermsFile {
   version: number;
   terms: Term[];
-}
-
-// A news source registered for briefing generation
-export interface BriefingSource {
-  id: string;
-  name: string;
-  url: string;
-  type: BriefingSourceType;
-  domain: BriefingDomain;
-  tier: 'T1' | 'T2';
-  weight: number;
-  enabled: boolean;
-}
-
-// Source registry for briefing generation
-export interface BriefingSourceRegistry {
-  version: number;
-  sources: BriefingSource[];
-  lastUpdated: string;
 }
 
 // Content extracted from a URL via Readability

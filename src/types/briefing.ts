@@ -1,5 +1,4 @@
-// Frontend briefing types — mirrors server/src/types/briefing.ts for API communication
-
+// Domain categories for study sessions and terms
 export type BriefingDomain = 'ai-tech' | 'economy' | 'politics';
 
 export const BRIEFING_DOMAIN_LABELS: Record<BriefingDomain, string> = {
@@ -7,34 +6,6 @@ export const BRIEFING_DOMAIN_LABELS: Record<BriefingDomain, string> = {
   'economy': '国际经济/金融经济',
   'politics': '国际政治',
 };
-
-export interface NewsEntry {
-  id: string;
-  domain: BriefingDomain;
-  chineseTitle: string;
-  englishTitle: string;
-  summary: string;
-  content: string;
-  sourceUrl: string;
-  sourceName: string;
-  publishedAt: string;
-}
-
-export interface BriefingUpdateResult {
-  success: boolean;
-  completedAt: string;
-  articlesFetched: number;
-  entriesGenerated: number;
-  retryCount: number;
-  errors: string[];
-}
-
-export interface DailyBriefing {
-  date: string;
-  entries: NewsEntry[];
-  generatedAt: string;
-  updateResult: BriefingUpdateResult;
-}
 
 export interface StudySession {
   id: string;

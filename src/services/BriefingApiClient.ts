@@ -1,7 +1,4 @@
 import type {
-  DailyBriefing,
-  NewsEntry,
-  BriefingUpdateResult,
   StudySession,
   CreateSessionInput,
   Term,
@@ -57,24 +54,6 @@ class BriefingApiClient {
     }
 
     return data.data as T;
-  }
-
-  // ==================== 简报相关 ====================
-
-  async getDailyBriefing(date?: string): Promise<DailyBriefing> {
-    const query = date ? `?date=${encodeURIComponent(date)}` : '';
-    return this.request<DailyBriefing>(`/api/briefing/daily${query}`);
-  }
-
-  async getNewsEntry(entryId: string, date?: string): Promise<NewsEntry> {
-    const query = date ? `?date=${encodeURIComponent(date)}` : '';
-    return this.request<NewsEntry>(`/api/briefing/entry/${entryId}${query}`);
-  }
-
-  async triggerBriefingGeneration(): Promise<BriefingUpdateResult> {
-    return this.request<BriefingUpdateResult>('/api/briefing/trigger', {
-      method: 'POST',
-    });
   }
 
   // ==================== 研习会话相关 ====================
