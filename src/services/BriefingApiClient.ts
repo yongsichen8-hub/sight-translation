@@ -6,7 +6,12 @@ import type {
   TermFilters,
 } from '../types/briefing';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = (() => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (import.meta.env.DEV) return 'http://localhost:3001';
+  const { protocol, hostname } = window.location;
+  return `${protocol}//${hostname}:3001`;
+})();
 
 interface ApiResponse<T> {
   success: boolean;

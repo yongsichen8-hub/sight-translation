@@ -1,5 +1,19 @@
 // API 基础 URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// 生产环境自动使用当前域名 + 3001 端口，开发环境使用 localhost:3001
+function getApiBaseUrl(): string {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // 开发环境（Vite dev server）
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001';
+  }
+  // 生产环境：使用当前域名 + 后端端口
+  const { protocol, hostname } = window.location;
+  return `${protocol}//${hostname}:3001`;
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 // 类型定义
 export interface AuthUser {
