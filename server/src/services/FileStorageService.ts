@@ -106,6 +106,8 @@ export class FileStorageService {
       'expressions.json': { version: 1, expressions: [] },
       'flashcards.json': { version: 1, flashcards: [] },
       'review-records.json': { version: 1, records: [] },
+      'notebooks.json': { version: 1, notebooks: [] },
+      'notebook-ai-settings.json': { apiKey: '', baseUrl: 'https://api.openai.com/v1', model: '' },
     };
     return (defaults[filename] ?? null) as T;
   }

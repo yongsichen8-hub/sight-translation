@@ -6,6 +6,8 @@ import { ProjectManager } from './components/ProjectManager';
 import { PracticeView } from './components/PracticeView';
 import { GlossaryManager } from './components/GlossaryManager';
 import { FlashcardReview } from './components/FlashcardReview';
+import { NotebookListPage } from './components/Notebook/NotebookListPage';
+import { NotebookWorkspace } from './components/Notebook/NotebookWorkspace';
 import { UserMenu } from './components/UserMenu/UserMenu';
 import { MigrationDialog } from './components/MigrationDialog/MigrationDialog';
 import { Toast, Button } from './components/common';
@@ -17,7 +19,7 @@ import './App.css';
  */
 function AppNav() {
   const { currentView } = useAppState();
-  const { goToProjects, goToGlossary, goToFlashcards } = useAppActions();
+  const { goToProjects, goToGlossary, goToFlashcards, goToNotebooks } = useAppActions();
   const { isAuthenticated, login } = useAuth();
 
   return (
@@ -43,6 +45,12 @@ function AppNav() {
           onClick={goToFlashcards}
         >
           复习
+        </button>
+        <button
+          className={`app-nav__link ${(currentView === 'notebooks' || currentView === 'notebook-workspace') ? 'app-nav__link--active' : ''}`}
+          onClick={goToNotebooks}
+        >
+          笔记本
         </button>
       </div>
       <div className="app-nav__user">
@@ -135,6 +143,10 @@ function AppContent() {
         return <GlossaryManager />;
       case 'flashcards':
         return <FlashcardReview />;
+      case 'notebooks':
+        return <NotebookListPage />;
+      case 'notebook-workspace':
+        return <NotebookWorkspace />;
       default:
         return <ProjectManager />;
     }

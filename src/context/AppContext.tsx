@@ -10,7 +10,7 @@ import type { NewsEntry } from '../types/briefing';
 /**
  * 应用视图类型
  */
-export type AppView = 'projects' | 'practice' | 'glossary' | 'flashcards' | 'align-editor' | 'briefing' | 'study-session' | 'term-library';
+export type AppView = 'projects' | 'practice' | 'glossary' | 'flashcards' | 'align-editor' | 'briefing' | 'study-session' | 'term-library' | 'notebooks' | 'notebook-workspace';
 
 /**
  * 练习模式类型
@@ -65,6 +65,8 @@ export interface AppState {
   openAIConfig: OpenAIConfig | null;
   /** 当前研习的新闻条目（从简报页面传入） */
   studyNewsEntry: NewsEntry | null;
+  /** 当前选中的笔记本项目 ID */
+  selectedNotebookId: string | null;
 }
 
 /**
@@ -92,7 +94,8 @@ export type AppAction =
   | { type: 'SET_OPENAI_CONFIG'; payload: OpenAIConfig | null }
   | { type: 'START_ALIGN_EDITOR'; payload: { project: Project; mode: PracticeMode } }
   | { type: 'START_STUDY_SESSION'; payload: NewsEntry }
-  | { type: 'EXIT_STUDY_SESSION' };
+  | { type: 'EXIT_STUDY_SESSION' }
+  | { type: 'GO_TO_NOTEBOOK_WORKSPACE'; payload: string };
 
 /**
  * 初始状态
@@ -109,6 +112,7 @@ export const initialState: AppState = {
   useEmptyData: false,
   openAIConfig: null,
   studyNewsEntry: null,
+  selectedNotebookId: null,
 };
 
 /**
@@ -296,6 +300,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         currentView: 'briefing',
         studyNewsEntry: null,
+      };
+
+    case 'GO_TO_NOTEBOOK_WORKSPACE':
+      return {
+        ...state,
+        currentView: 'notebook-workspace',
+        selectedNotebookId: action.payload,
+        error: null,
       };
 
     default:

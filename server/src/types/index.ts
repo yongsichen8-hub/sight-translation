@@ -191,6 +191,58 @@ export interface MigrationResult {
   errors: string[];
 }
 
+// Notebook types
+export interface NotebookProject {
+  id: string;
+  title: string;
+  domain: string;
+  startDate?: string;
+  endDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotebookProjectInput {
+  title: string;
+  domain?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface MemoContent {
+  type: 'doc';
+  content: TiptapNode[];
+}
+
+export interface TiptapNode {
+  type: string;
+  attrs?: Record<string, unknown>;
+  content?: TiptapNode[];
+  marks?: { type: string; attrs?: Record<string, unknown> }[];
+  text?: string;
+}
+
+export interface OrganizedResult {
+  markdown: string;
+  organizedAt: string;
+}
+
+export interface BilingualExpression {
+  chinese: string;
+  english: string;
+}
+
+export interface AiSettings {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+}
+
+export interface NotebooksFile {
+  version: number;
+  notebooks: NotebookProject[];
+}
+
 // Express request extension
 declare global {
   namespace Express {

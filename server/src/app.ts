@@ -16,6 +16,7 @@ import { createNewsRouter } from './routes/news';
 import { createBriefingRouter } from './routes/briefing';
 import { createStudySessionsRouter } from './routes/studySessions';
 import { createTermsRouter } from './routes/terms';
+import { createNotebookRoutes } from './routes/notebooks';
 import { NewsStorageService } from './services/NewsStorageService';
 import { SourceRegistryService } from './services/SourceRegistryService';
 import { NewsScheduler } from './services/NewsScheduler';
@@ -29,6 +30,7 @@ import { BriefingGenerator } from './services/BriefingGenerator';
 import { BriefingScheduler } from './services/BriefingScheduler';
 import { StudySessionService } from './services/StudySessionService';
 import { TermService } from './services/TermService';
+import { NotebookService } from './services/NotebookService';
 import { fileStorageService } from './services/FileStorageService';
 
 const app = express();
@@ -64,6 +66,7 @@ briefingScheduler.start();
 // 初始化研习会话和术语服务
 const studySessionService = new StudySessionService(fileStorageService);
 const termService = new TermService(fileStorageService);
+const notebookService = new NotebookService(fileStorageService);
 
 // 导出 briefingScheduler 供 index.ts 使用
 export { briefingScheduler };
@@ -112,6 +115,7 @@ app.use('/api/news', createNewsRouter(newsStorageService, sourceRegistry, newsSc
 app.use('/api/briefing', createBriefingRouter(briefingStorageService, briefingScheduler));
 app.use('/api/study-sessions', createStudySessionsRouter(studySessionService, contentExtractor));
 app.use('/api/terms', createTermsRouter(termService));
+app.use('/api/notebooks', createNotebookRoutes(notebookService));
 
 // 404 处理
 app.use((req, res) => {

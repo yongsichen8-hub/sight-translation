@@ -63,6 +63,23 @@ export function useAppActions() {
   }, [dispatch]);
 
   /**
+   * 导航到笔记本列表
+   */
+  const goToNotebooks = useCallback(() => {
+    dispatch({ type: 'SET_VIEW', payload: 'notebooks' });
+  }, [dispatch]);
+
+  /**
+   * 导航到笔记本工作区
+   */
+  const goToNotebookWorkspace = useCallback(
+    (notebookId: string) => {
+      dispatch({ type: 'GO_TO_NOTEBOOK_WORKSPACE', payload: notebookId });
+    },
+    [dispatch]
+  );
+
+  /**
    * 从简报进入研习会话
    */
   const startStudySession = useCallback(
@@ -281,6 +298,8 @@ export function useAppActions() {
     goToFlashcards,
     goToBriefing,
     goToTermLibrary,
+    goToNotebooks,
+    goToNotebookWorkspace,
     // 研习会话
     startStudySession,
     exitStudySession,

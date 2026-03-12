@@ -1,0 +1,180 @@
+/**
+ * NotebookListPage 组件样式
+ */
+
+.notebook-list {
+  padding: 1rem;
+}
+
+.notebook-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.notebook-list__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.notebook-list__empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+}
+
+.notebook-list__empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.notebook-list__empty-text {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.notebook-list__items {
+  display: grid;
+  gap: 1rem;
+}
+
+/* 笔记本卡片 */
+.notebook-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.notebook-card:hover {
+  border-color: #4a90d9;
+  box-shadow: 0 2px 8px rgba(74, 144, 217, 0.15);
+}
+
+.notebook-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.notebook-card__name {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin: 0;
+  word-break: break-word;
+}
+
+.notebook-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.notebook-card__info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.notebook-card__domain {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.notebook-card__domain-icon {
+  opacity: 0.7;
+}
+
+.notebook-card__date {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* 表单样式 */
+.notebook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notebook-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.notebook-form__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.notebook-form__required {
+  color: #d32f2f;
+  margin-left: 0.125rem;
+}
+
+.notebook-form__input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.notebook-form__input:focus {
+  border-color: #4a90d9;
+}
+
+.notebook-form__input--error {
+  border-color: #d32f2f;
+}
+
+.notebook-form__error {
+  font-size: 0.8125rem;
+  color: #d32f2f;
+}
+
+.notebook-form__row {
+  display: flex;
+  gap: 1rem;
+}
+
+.notebook-form__row .notebook-form__field {
+  flex: 1;
+}
+
+.notebook-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* 删除确认 */
+.notebook-delete__message {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.notebook-delete__name {
+  font-weight: 600;
+  color: #d32f2f;
+}
+
+.notebook-delete__warning {
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 0.5rem;
+}

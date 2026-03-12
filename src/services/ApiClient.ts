@@ -55,6 +55,53 @@ export interface MigrationResult {
   errors: string[];
 }
 
+// Notebook 类型定义
+export interface NotebookProject {
+  id: string;
+  title: string;
+  domain: string;
+  startDate?: string;
+  endDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotebookProjectInput {
+  title: string;
+  domain?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface TiptapNode {
+  type: string;
+  attrs?: Record<string, unknown>;
+  content?: TiptapNode[];
+  marks?: { type: string; attrs?: Record<string, unknown> }[];
+  text?: string;
+}
+
+export interface MemoContent {
+  type: 'doc';
+  content: TiptapNode[];
+}
+
+export interface OrganizedResult {
+  markdown: string;
+  organizedAt: string;
+}
+
+export interface BilingualExpression {
+  chinese: string;
+  english: string;
+}
+
+export interface AiSettings {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -208,6 +255,72 @@ class ApiClient {
     return this.request<MigrationResult>('/api/migration/import', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  // ==================== 笔记本相关 ====================
+
+  async getNotebooks(): Promise<NotebookProject[]> {
+    return this.request<NotebookProject[]>('/api/notebooks');
+  }
+
+  async createNotebook(input: NotebookProjectInput): Promise<NotebookProject> {
+    return this.request<NotebookProject>('/api/notebooks', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async updateNotebook(id: string, updates: Partial<NotebookProjectInput>): Promise<void> {
+    await this.request(`/api/notebooks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteNotebook(id: string): Promise<void> {
+    await this.request(`/api/notebooks/${id}`, { method: 'DELETE' });
+  }
+
+  async getMemo(notebookId: string): Promise<MemoContent> {
+    return this.request<MemoContent>(`/api/notebooks/${notebookId}/memo`);
+  }
+
+  async saveMemo(notebookId: string, content: MemoContent): Promise<void> {
+    await this.request(`/api/notebooks/${notebookId}/memo`, {
+      method: 'PUT',
+      body: JSON.stringify(content),
+    });
+  }
+
+  async organizeNotes(notebookId: string): Promise<OrganizedResult> {
+    return this.request<OrganizedResult>(`/api/notebooks/${notebookId}/organize`, {
+      method: 'POST',
+    });
+  }
+
+  async getOrganizedResult(notebookId: string): Promise<OrganizedResult | null> {
+    try {
+      return await this.request<OrganizedResult>(`/api/notebooks/${notebookId}/organized`);
+    } catch {
+      return null;
+    }
+  }
+
+  async exportExpressions(notebookId: string): Promise<BilingualExpression[]> {
+    return this.request<BilingualExpression[]>(`/api/notebooks/${notebookId}/export-expressions`, {
+      method: 'POST',
+    });
+  }
+
+  async getAiSettings(): Promise<AiSettings> {
+    return this.request<AiSettings>('/api/notebooks/settings/ai');
+  }
+
+  async saveAiSettings(settings: AiSettings): Promise<void> {
+    await this.request('/api/notebooks/settings/ai', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
     });
   }
 }
