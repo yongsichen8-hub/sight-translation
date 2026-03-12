@@ -28,18 +28,11 @@ export const config = {
     redirectUri: process.env.FEISHU_REDIRECT_URI || 'http://localhost:5173/auth/callback',
   },
   
-  // 新闻配置
-  news: {
-    similarityThreshold: parseFloat(process.env.NEWS_SIMILARITY_THRESHOLD || '0.75'),
-    openaiApiKey: process.env.OPENAI_API_KEY || '',
-    openaiBaseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
-    embeddingModel: process.env.EMBEDDING_MODEL || 'text-embedding-3-small',
-    chatModel: process.env.CHAT_MODEL || 'gpt-4o-mini',
-  },
-
-  // CORS 配置
+  // CORS 配置 - 支持多个 origin（逗号分隔）
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
+      : 'http://localhost:5173',
     credentials: true,
   },
   
