@@ -199,8 +199,8 @@ export class NotebookService {
         if (node.type === 'image' && node.attrs?.src) {
           const src = node.attrs.src as string;
           imageUrls.push(src);
-          // 在文本中插入图片占位符，保留位置信息
-          textParts.push(`\n[图片: ${src}]\n`);
+          // 用编号占位符代替完整图片数据，避免 base64 撑爆 token
+          textParts.push(`\n[图片${imageUrls.length}]\n`);
         }
         // Extract text from text nodes
         if (node.text) {
@@ -277,7 +277,7 @@ export class NotebookService {
 5. 如果原始笔记比较零碎，请适当补充过渡性语句和连接词，使内容阅读起来更加丝滑、连贯
 6. 补充的内容应基于笔记中已有的信息进行合理衔接，不要凭空编造新事实
 7. 笔记是按时间顺序书写的。如果同一事实前后出现了不同的数值或描述（如人数、金额、日期等），以后出现的（即文本中靠后的）为准，整理结果中只保留最新数据
-8. 文本中的 [图片: ...] 标记代表用户插入的图片，请在整理结果中用 Markdown 图片语法 ![图片](url) 保留这些图片，放在相关内容附近
+8. 文本中的 [图片1]、[图片2] 等标记代表用户插入的图片，请在整理结果中原样保留这些占位符（如 [图片1]），放在相关内容附近，不要修改占位符格式
 9. 输出使用 Markdown 格式
 
 备忘录内容：
@@ -321,9 +321,20 @@ ${text}${urlSection}`;
         throw new Error('AI_API_ERROR: AI 服务返回了空内容');
       }
 
-      // 6. 存储整理结果
+      // 6. 将图片占位符替换回真实图片 Markdown
+      let finalMarkdown = markdown;
+      for (let i = 0; i < imageUrls.length; i++) {
+        const placeholder = `[图片${i + 1}]`;
+        const imgMarkdown = `![图片${i + 1}](${imageUrls[i]})`;
+        // 替换所有出现的占位符
+        while (finalMarkdown.includes(placeholder)) {
+          finalMarkdown = finalMarkdown.replace(placeholder, imgMarkdown);
+        }
+      }
+
+      // 7. 存储整理结果
       const result: OrganizedResult = {
-        markdown,
+        markdown: finalMarkdown,
         organizedAt: new Date().toISOString(),
       };
 
