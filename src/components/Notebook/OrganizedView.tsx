@@ -1,10 +1,12 @@
 /**
  * OrganizedView 组件
- * 展示 AI 整理后的 Markdown 内容，URL 链接可点击
+ * 展示 AI 整理后的 Markdown 内容，URL 链接可点击，图片可点击放大
  */
 
+import { useState, useCallback } from 'react';
 import type { OrganizedResult } from '../../services/ApiClient';
 import { Loading } from '../common';
+import { ImageLightbox } from './ImageLightbox';
 
 interface OrganizedViewProps {
   result: OrganizedResult | null;
@@ -13,7 +15,7 @@ interface OrganizedViewProps {
 
 /**
  * 简易 Markdown → HTML 转换
- * 支持：## 标题、**加粗**、*斜体*、[链接](url)、裸 URL、换行
+ * 支持：## 标题、**加粗**、*斜体*、[链接](url)、![图片](url)、裸 URL、换行
  */
 function markdownToHtml(md: string): string {
   return md
@@ -25,6 +27,13 @@ function markdownToHtml(md: string): string {
       if (line.startsWith('# ')) return `<h1>${escapeAndFormat(line.slice(2))}</h1>`;
       // 空行
       if (line.trim() === '') return '<br/>';
+      // 纯图片行
+      const imgOnlyMatch = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+      if (imgOnlyMatch) {
+        const alt = escapeHtml(imgOnlyMatch[1] || '');
+        const src = imgOnlyMatch[2] || '';
+        return `<p><img src="${src}" alt="${alt}" class="organized-view__image" data-lightbox="true" /></p>`;
+      }
       // 列表项
       if (line.match(/^\s*[-*]\s/)) {
         return `<li>${escapeAndFormat(line.replace(/^\s*[-*]\s/, ''))}</li>`;
@@ -45,14 +54,19 @@ function escapeHtml(text: string): string {
 
 function escapeAndFormat(text: string): string {
   let result = escapeHtml(text);
+  // Markdown 图片 ![alt](url) — 内联图片
+  result = result.replace(
+    /!\[([^\]]*)\]\(([^)]+)\)/g,
+    '<img src="$2" alt="$1" class="organized-view__image" data-lightbox="true" />'
+  );
   // Markdown 链接 [text](url)
   result = result.replace(
     /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
     '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
   );
-  // 裸 URL（未被 <a> 包裹的）
+  // 裸 URL（未被 <a> 或 <img> 包裹的）
   result = result.replace(
-    /(?<!href="|">)(https?:\/\/[^\s<]+)/g,
+    /(?<!href="|">|src=")(https?:\/\/[^\s<]+)/g,
     '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
   );
   // 加粗 **text**
@@ -63,6 +77,15 @@ function escapeAndFormat(text: string): string {
 }
 
 export function OrganizedView({ result, loading }: OrganizedViewProps) {
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+  const handleContentClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'IMG' && target.dataset.lightbox === 'true') {
+      setLightboxSrc((target as HTMLImageElement).src);
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="organized-view organized-view--loading">
@@ -96,7 +119,11 @@ export function OrganizedView({ result, loading }: OrganizedViewProps) {
       <div
         className="organized-view__content"
         dangerouslySetInnerHTML={{ __html: html }}
+        onClick={handleContentClick}
       />
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      )}
     </div>
   );
 }

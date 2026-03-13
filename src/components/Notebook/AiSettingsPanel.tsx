@@ -24,6 +24,21 @@ export function AiSettingsPanel({ visible, onClose }: AiSettingsPanelProps) {
   const baseUrlId = useId();
   const modelId = useId();
 
+  // Base URL 格式校验：检测常见错误（如填了管理页面地址而非 API 地址）
+  const baseUrlWarning = (() => {
+    const url = baseUrl.trim().toLowerCase();
+    if (url.includes('platform.deepseek.com')) {
+      return '这看起来是 DeepSeek 管理页面地址，API 地址应为 https://api.deepseek.com/v1';
+    }
+    if (url.includes('openai.com') && !url.includes('api.openai.com')) {
+      return '这看起来不是 OpenAI API 地址，应为 https://api.openai.com/v1';
+    }
+    if (url.endsWith('/chat/completions')) {
+      return '不需要包含 /chat/completions，只填到 /v1 即可';
+    }
+    return '';
+  })();
+
   const loadSettings = useCallback(async () => {
     try {
       setLoadingSettings(true);
@@ -105,8 +120,11 @@ export function AiSettingsPanel({ visible, onClose }: AiSettingsPanelProps) {
                 onChange={e => setBaseUrl(e.target.value)}
                 placeholder="https://api.openai.com/v1"
                 disabled={saving}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #d0d0d0', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: baseUrlWarning ? '1px solid #e8a838' : '1px solid #d0d0d0', boxSizing: 'border-box' }}
               />
+              {baseUrlWarning && (
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#c87a00' }}>{baseUrlWarning}</p>
+              )}
             </div>
             <div>
               <label htmlFor={modelId} style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>

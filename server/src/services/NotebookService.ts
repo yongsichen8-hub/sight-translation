@@ -185,15 +185,23 @@ export class NotebookService {
   // ==================== AI 一键整理 ====================
 
   /**
-   * 从 Tiptap JSON 内容中提取纯文本和 URL
+   * 从 Tiptap JSON 内容中提取纯文本、URL 和图片
    */
-  private extractTextAndUrls(content: MemoContent): { text: string; urls: string[] } {
+  private extractTextAndUrls(content: MemoContent): { text: string; urls: string[]; imageUrls: string[] } {
     const textParts: string[] = [];
     const urls: string[] = [];
+    const imageUrls: string[] = [];
 
     const walk = (nodes: TiptapNode[] | undefined): void => {
       if (!nodes) return;
       for (const node of nodes) {
+        // Extract image src
+        if (node.type === 'image' && node.attrs?.src) {
+          const src = node.attrs.src as string;
+          imageUrls.push(src);
+          // 在文本中插入图片占位符，保留位置信息
+          textParts.push(`\n[图片: ${src}]\n`);
+        }
         // Extract text from text nodes
         if (node.text) {
           textParts.push(node.text);
@@ -222,6 +230,7 @@ export class NotebookService {
     return {
       text: textParts.join('').trim(),
       urls: [...new Set(urls)],
+      imageUrls,
     };
   }
 
@@ -245,7 +254,7 @@ export class NotebookService {
     }
 
     // 3. 提取纯文本和 URL
-    const { text, urls } = this.extractTextAndUrls(memo);
+    const { text, urls, imageUrls } = this.extractTextAndUrls(memo);
     if (!text.trim()) {
       return {
         markdown: '备忘录为空，请先在左侧编辑器中添加笔记内容。',
@@ -267,7 +276,9 @@ export class NotebookService {
 4. 保留所有 URL 链接
 5. 如果原始笔记比较零碎，请适当补充过渡性语句和连接词，使内容阅读起来更加丝滑、连贯
 6. 补充的内容应基于笔记中已有的信息进行合理衔接，不要凭空编造新事实
-7. 输出使用 Markdown 格式
+7. 笔记是按时间顺序书写的。如果同一事实前后出现了不同的数值或描述（如人数、金额、日期等），以后出现的（即文本中靠后的）为准，整理结果中只保留最新数据
+8. 文本中的 [图片: ...] 标记代表用户插入的图片，请在整理结果中用 Markdown 图片语法 ![图片](url) 保留这些图片，放在相关内容附近
+9. 输出使用 Markdown 格式
 
 备忘录内容：
 ${text}${urlSection}`;
@@ -339,6 +350,12 @@ ${text}${urlSection}`;
     const aiSettings = await this.getAiSettings(userId);
     if (!aiSettings.apiKey || !aiSettings.baseUrl || !aiSettings.model) {
       throw new Error('AI_NOT_CONFIGURED: 请先在设置中配置 AI 服务的 API Key、Base URL 和模型');
+    }
+
+    // 校验 Base URL 格式
+    const baseUrlLower = aiSettings.baseUrl.toLowerCase();
+    if (baseUrlLower.includes('platform.deepseek.com')) {
+      throw new Error('AI_CONFIG_ERROR: Base URL 填写了 DeepSeek 管理页面地址，请改为 https://api.deepseek.com/v1');
     }
 
     // 2. 读取备忘录内容

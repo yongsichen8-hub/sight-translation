@@ -200,6 +200,14 @@
   margin-left: 16px;
 }
 
+.organized-view__content img.organized-view__image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 8px 0;
+  cursor: zoom-in;
+}
+
 /* 响应式 */
 @media (max-width: 900px) {
   .notebook-workspace__body {

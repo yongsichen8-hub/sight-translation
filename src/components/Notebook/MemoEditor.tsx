@@ -14,6 +14,7 @@ import Underline from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import type { MemoContent } from '../../services/ApiClient';
+import { ImageLightbox } from './ImageLightbox';
 import './MemoEditor.css';
 
 interface MemoEditorProps {
@@ -24,6 +25,7 @@ interface MemoEditorProps {
 
 export function MemoEditor({ content, onSave, disabled = false }: MemoEditorProps) {
   const [saveError, setSaveError] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestContentRef = useRef<MemoContent>(content);
@@ -137,6 +139,14 @@ export function MemoEditor({ content, onSave, disabled = false }: MemoEditorProp
     return () => el.removeEventListener('paste', handlePaste);
   }, [editor]);
 
+  // 处理编辑器中图片点击放大
+  const handleEditorClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'IMG') {
+      setLightboxSrc((target as HTMLImageElement).src);
+    }
+  }, []);
+
   if (!editor) return null;
 
   return (
@@ -149,9 +159,13 @@ export function MemoEditor({ content, onSave, disabled = false }: MemoEditorProp
 
       <Toolbar editor={editor} disabled={disabled} onAddLink={addLink} onAddImage={addImage} />
 
-      <div className="memo-editor__content">
+      <div className="memo-editor__content" onClick={handleEditorClick}>
         <EditorContent editor={editor} />
       </div>
+
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      )}
     </div>
   );
 }

@@ -132,6 +132,7 @@
   height: auto;
   border-radius: 4px;
   margin: 8px 0;
+  cursor: zoom-in;
 }
 
 .memo-editor__content .tiptap u {
