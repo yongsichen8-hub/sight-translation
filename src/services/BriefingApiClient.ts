@@ -9,8 +9,7 @@ import type {
 const API_BASE_URL = (() => {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
   if (import.meta.env.DEV) return 'http://localhost:3001';
-  const { protocol, hostname } = window.location;
-  return `${protocol}//${hostname}:3001`;
+  return '/sight-translation';
 })();
 
 interface ApiResponse<T> {

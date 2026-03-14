@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const code = urlParams.get('code');
       const state = urlParams.get('state');
 
-      if (code && state && window.location.pathname === '/auth/callback') {
+      if (code && state && window.location.pathname === '/sight-translation/auth/callback') {
         try {
           setIsLoading(true);
           const authUser = await apiClient.handleCallback(code, state);
@@ -88,10 +88,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setIsFirstLogin(hasLocalData);
           
           // 清除 URL 参数
-          window.history.replaceState({}, '', '/');
+          window.history.replaceState({}, '', '/sight-translation/');
         } catch (error) {
           console.error('OAuth 回调处理失败:', error);
-          window.history.replaceState({}, '', '/');
+          window.history.replaceState({}, '', '/sight-translation/');
         } finally {
           setIsLoading(false);
         }
