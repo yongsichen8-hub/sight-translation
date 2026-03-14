@@ -322,14 +322,15 @@ ${text}${urlSection}`;
       }
 
       // 6. 将图片占位符替换回真实图片 Markdown
+      // 注意：不能用 while(includes) 循环，因为替换结果 ![图片1](url) 仍包含 [图片1]，会死循环
+      // 使用正则精确匹配独立的 [图片N]（前面不是 ! 的情况），一次性替换
       let finalMarkdown = markdown;
       for (let i = 0; i < imageUrls.length; i++) {
-        const placeholder = `[图片${i + 1}]`;
-        const imgMarkdown = `![图片${i + 1}](${imageUrls[i]})`;
-        // 替换所有出现的占位符
-        while (finalMarkdown.includes(placeholder)) {
-          finalMarkdown = finalMarkdown.replace(placeholder, imgMarkdown);
-        }
+        const idx = i + 1;
+        const imgMarkdown = `![图片${idx}](${imageUrls[i]})`;
+        // 匹配前面不是 ! 的 [图片N]，避免重复替换已转换的 ![图片N](url)
+        const regex = new RegExp(`(?<!!)\\[图片${idx}\\]`, 'g');
+        finalMarkdown = finalMarkdown.replace(regex, imgMarkdown);
       }
 
       // 7. 存储整理结果
