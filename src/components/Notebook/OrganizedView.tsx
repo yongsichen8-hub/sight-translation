@@ -4,13 +4,46 @@
  */
 
 import { useState, useCallback } from 'react';
-import type { OrganizedResult } from '../../services/ApiClient';
+import type { OrganizedResult, MemoContent, TiptapNode } from '../../services/ApiClient';
 import { Loading } from '../common';
 import { ImageLightbox } from './ImageLightbox';
 
 interface OrganizedViewProps {
   result: OrganizedResult | null;
   loading: boolean;
+  memoContent?: MemoContent | null;
+}
+
+/**
+ * 从 MemoContent 中提取所有图片 URL（按出现顺序）
+ */
+function extractImageUrls(content: MemoContent | null | undefined): string[] {
+  if (!content?.content) return [];
+  const urls: string[] = [];
+  const walk = (nodes: TiptapNode[] | undefined): void => {
+    if (!nodes) return;
+    for (const node of nodes) {
+      if (node.type === 'image' && node.attrs?.src) {
+        urls.push(node.attrs.src as string);
+      }
+      walk(node.content);
+    }
+  };
+  walk(content.content);
+  return urls;
+}
+
+/**
+ * 将 markdown 中的 placeholder://N 替换为真实图片 URL
+ */
+function resolvePlaceholders(markdown: string, imageUrls: string[]): string {
+  return markdown.replace(/!\[([^\]]*)\]\(placeholder:\/\/(\d+)\)/g, (_match, alt, idxStr) => {
+    const idx = parseInt(idxStr, 10) - 1;
+    if (idx >= 0 && idx < imageUrls.length) {
+      return `![${alt}](${imageUrls[idx]})`;
+    }
+    return _match;
+  });
 }
 
 /**
@@ -76,7 +109,7 @@ function escapeAndFormat(text: string): string {
   return result;
 }
 
-export function OrganizedView({ result, loading }: OrganizedViewProps) {
+export function OrganizedView({ result, loading, memoContent }: OrganizedViewProps) {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const handleContentClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -106,7 +139,9 @@ export function OrganizedView({ result, loading }: OrganizedViewProps) {
     );
   }
 
-  const html = markdownToHtml(result.markdown);
+  const imageUrls = extractImageUrls(memoContent);
+  const resolvedMarkdown = resolvePlaceholders(result.markdown, imageUrls);
+  const html = markdownToHtml(resolvedMarkdown);
 
   return (
     <div className="organized-view">

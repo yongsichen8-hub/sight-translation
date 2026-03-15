@@ -321,19 +321,18 @@ ${text}${urlSection}`;
         throw new Error('AI_API_ERROR: AI 服务返回了空内容');
       }
 
-      // 6. 将图片占位符替换回真实图片 Markdown
-      // 注意：不能用 while(includes) 循环，因为替换结果 ![图片1](url) 仍包含 [图片1]，会死循环
-      // 使用正则精确匹配独立的 [图片N]（前面不是 ! 的情况），一次性替换
+      // 6. 将图片占位符替换回 Markdown 图片语法
+      // AI 可能改变占位符格式（加空格、改括号等），用宽松正则匹配
+      // 不把 base64 嵌入 markdown，而是用 placeholder:// 协议引用，前端渲染时替换为真实数据
       let finalMarkdown = markdown;
       for (let i = 0; i < imageUrls.length; i++) {
         const idx = i + 1;
-        const imgMarkdown = `![图片${idx}](${imageUrls[i]})`;
-        // 匹配前面不是 ! 的 [图片N]，避免重复替换已转换的 ![图片N](url)
-        const regex = new RegExp(`(?<!!)\\[图片${idx}\\]`, 'g');
-        finalMarkdown = finalMarkdown.replace(regex, imgMarkdown);
+        // 宽松匹配：[图片1]、【图片1】、[图片 1]、[ 图片1 ] 等变体
+        const regex = new RegExp(`(?<!!)[\\[【]\\s*图片\\s*${idx}\\s*[\\]】]`, 'g');
+        finalMarkdown = finalMarkdown.replace(regex, `![图片${idx}](placeholder://${idx})`);
       }
 
-      // 7. 存储整理结果
+      // 7. 存储整理结果（markdown 只含 placeholder:// 引用，不含 base64，保持文件小）
       const result: OrganizedResult = {
         markdown: finalMarkdown,
         organizedAt: new Date().toISOString(),

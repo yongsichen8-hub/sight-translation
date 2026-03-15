@@ -182,7 +182,7 @@ export function NotebookWorkspace() {
 
         {/* 右侧：整理结果 */}
         <div className="notebook-workspace__right">
-          <OrganizedView result={organizedResult} loading={organizing} />
+          <OrganizedView result={organizedResult} loading={organizing} memoContent={memoContent} />
         </div>
       </div>
 
