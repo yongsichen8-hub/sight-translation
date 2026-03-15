@@ -231,7 +231,7 @@ export function createNotebookRoutes(notebookService: NotebookService): Router {
       if (message.includes('AI_TIMEOUT')) {
         res.status(504).json({
           success: false,
-          error: { code: 'AI_TIMEOUT', message: 'AI 整理请求超时（60 秒），请稍后重试' },
+          error: { code: 'AI_TIMEOUT', message: 'AI 整理请求超时（120 秒），请稍后重试' },
         });
         return;
       }
@@ -271,7 +271,7 @@ export function createNotebookRoutes(notebookService: NotebookService): Router {
       if (message.includes('AI_TIMEOUT')) {
         res.status(504).json({
           success: false,
-          error: { code: 'AI_TIMEOUT', message: '双语表达识别请求超时（60 秒），请稍后重试' },
+          error: { code: 'AI_TIMEOUT', message: '双语表达识别请求超时（120 秒），请稍后重试' },
         });
         return;
       }
