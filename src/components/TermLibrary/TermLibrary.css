@@ -25,9 +25,92 @@
   color: #1a1a1a;
 }
 
+.term-library__header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .term-library__count {
   font-size: 0.85rem;
   color: #9ca3af;
+}
+
+.term-library__manage-btn {
+  padding: 5px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.term-library__manage-btn:hover {
+  background: #f3f4f6;
+}
+
+.term-library__manage-btn--active {
+  border-color: #4a90d9;
+  color: #4a90d9;
+}
+
+/* ==================== Batch Bar ==================== */
+
+.term-library__batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.term-library__select-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+
+.term-library__select-all input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #4a90d9;
+}
+
+.term-library__batch-info {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-right: auto;
+}
+
+.term-library__batch-delete-btn {
+  padding: 5px 16px;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  background: #fff;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.term-library__batch-delete-btn:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.term-library__batch-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ==================== Error State ==================== */
@@ -162,16 +245,11 @@
 .term-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.75rem 1rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background: #fff;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -183,6 +261,30 @@
 .term-card--selected {
   border-color: #4a90d9;
   background: #f0f7ff;
+}
+
+.term-card__checkbox {
+  width: 16px;
+  height: 16px;
+  margin-left: 0.75rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: #4a90d9;
+}
+
+.term-card__button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
 }
 
 .term-card__content {
@@ -423,6 +525,44 @@
     color: #f9fafb;
   }
 
+  .term-library__manage-btn {
+    background: #1f2937;
+    border-color: #374151;
+    color: #d1d5db;
+  }
+
+  .term-library__manage-btn:hover {
+    background: #374151;
+  }
+
+  .term-library__manage-btn--active {
+    border-color: #60a5fa;
+    color: #60a5fa;
+  }
+
+  .term-library__batch-bar {
+    background: #111827;
+    border-color: #374151;
+  }
+
+  .term-library__select-all {
+    color: #d1d5db;
+  }
+
+  .term-library__batch-info {
+    color: #9ca3af;
+  }
+
+  .term-library__batch-delete-btn {
+    background: #1f2937;
+    border-color: #f87171;
+    color: #f87171;
+  }
+
+  .term-library__batch-delete-btn:hover:not(:disabled) {
+    background: #451a1a;
+  }
+
   .term-filters__domain-select {
     background: #1f2937;
     border-color: #374151;
@@ -458,6 +598,10 @@
   .term-card--selected {
     border-color: #60a5fa;
     background: #1e3a5f;
+  }
+
+  .term-card__button {
+    color: inherit;
   }
 
   .term-card__english {

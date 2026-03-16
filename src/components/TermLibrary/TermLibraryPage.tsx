@@ -1,6 +1,6 @@
 /**
  * TermLibraryPage 组件
- * 术语库容器：管理术语列表状态、筛选条件和选中术语详情
+ * 术语库容器：管理术语列表状态、筛选条件、选中术语详情和批量操作
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -21,6 +21,11 @@ export function TermLibraryPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  // 批量选择状态
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [batchDeleting, setBatchDeleting] = useState(false);
+
   const fetchTerms = useCallback(async () => {
     try {
       setLoading(true);
@@ -39,6 +44,51 @@ export function TermLibraryPage(): React.ReactElement {
   useEffect(() => {
     fetchTerms();
   }, [fetchTerms]);
+
+  // 退出选择模式时清空选中
+  const toggleSelectionMode = useCallback(() => {
+    setSelectionMode((prev) => {
+      if (prev) setCheckedIds(new Set());
+      return !prev;
+    });
+  }, []);
+
+  const handleCheckChange = useCallback((termId: string, checked: boolean) => {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(termId);
+      else next.delete(termId);
+      return next;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    if (checkedIds.size === terms.length) {
+      setCheckedIds(new Set());
+    } else {
+      setCheckedIds(new Set(terms.map((t) => t.id)));
+    }
+  }, [terms, checkedIds.size]);
+
+  const handleBatchDelete = useCallback(async () => {
+    if (checkedIds.size === 0) return;
+    setBatchDeleting(true);
+    try {
+      await briefingApiClient.deleteTermsBatch(Array.from(checkedIds));
+      setTerms((prev) => prev.filter((t) => !checkedIds.has(t.id)));
+      if (selectedTermId && checkedIds.has(selectedTermId)) {
+        setSelectedTermId(null);
+      }
+      setToast({ message: `已删除 ${checkedIds.size} 个术语`, type: 'success' });
+      setCheckedIds(new Set());
+      setSelectionMode(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '批量删除失败';
+      setToast({ message: msg, type: 'error' });
+    } finally {
+      setBatchDeleting(false);
+    }
+  }, [checkedIds, selectedTermId]);
 
   const handleFilterChange = useCallback((newFilters: TermFiltersType) => {
     setFilters(newFilters);
@@ -87,6 +137,7 @@ export function TermLibraryPage(): React.ReactElement {
   }, []);
 
   const selectedTerm = terms.find((t) => t.id === selectedTermId) || null;
+  const allChecked = terms.length > 0 && checkedIds.size === terms.length;
 
   if (loading) return <Loading text="加载术语库..." />;
 
@@ -94,10 +145,45 @@ export function TermLibraryPage(): React.ReactElement {
     <div className="term-library">
       <div className="term-library__header">
         <h1 className="term-library__title">术语库</h1>
-        <span className="term-library__count">{terms.length} 个术语</span>
+        <div className="term-library__header-right">
+          <span className="term-library__count">{terms.length} 个术语</span>
+          {terms.length > 0 && (
+            <button
+              className={`term-library__manage-btn ${selectionMode ? 'term-library__manage-btn--active' : ''}`}
+              onClick={toggleSelectionMode}
+              type="button"
+            >
+              {selectionMode ? '取消' : '管理'}
+            </button>
+          )}
+        </div>
       </div>
 
       <TermFilters filters={filters} onFilterChange={handleFilterChange} />
+
+      {selectionMode && terms.length > 0 && (
+        <div className="term-library__batch-bar">
+          <label className="term-library__select-all">
+            <input
+              type="checkbox"
+              checked={allChecked}
+              onChange={handleSelectAll}
+            />
+            <span>全选</span>
+          </label>
+          <span className="term-library__batch-info">
+            已选 {checkedIds.size} / {terms.length}
+          </span>
+          <button
+            className="term-library__batch-delete-btn"
+            onClick={handleBatchDelete}
+            disabled={checkedIds.size === 0 || batchDeleting}
+            type="button"
+          >
+            {batchDeleting ? '删除中...' : `删除 (${checkedIds.size})`}
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="term-library__error">
@@ -115,6 +201,9 @@ export function TermLibraryPage(): React.ReactElement {
               terms={terms}
               selectedTermId={selectedTermId}
               onSelectTerm={handleSelectTerm}
+              selectionMode={selectionMode}
+              checkedIds={checkedIds}
+              onCheckChange={handleCheckChange}
             />
           </div>
 

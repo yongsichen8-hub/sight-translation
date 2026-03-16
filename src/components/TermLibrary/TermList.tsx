@@ -1,6 +1,6 @@
 /**
  * TermList 组件
- * 渲染术语卡片列表
+ * 渲染术语卡片列表，支持批量选择模式
  */
 
 import React from 'react';
@@ -11,9 +11,12 @@ interface TermListProps {
   terms: Term[];
   selectedTermId: string | null;
   onSelectTerm: (termId: string) => void;
+  selectionMode?: boolean;
+  checkedIds?: Set<string>;
+  onCheckChange?: (termId: string, checked: boolean) => void;
 }
 
-export function TermList({ terms, selectedTermId, onSelectTerm }: TermListProps): React.ReactElement {
+export function TermList({ terms, selectedTermId, onSelectTerm, selectionMode, checkedIds, onCheckChange }: TermListProps): React.ReactElement {
   if (terms.length === 0) {
     return (
       <div className="term-list__empty">
@@ -31,6 +34,9 @@ export function TermList({ terms, selectedTermId, onSelectTerm }: TermListProps)
           term={term}
           isSelected={selectedTermId === term.id}
           onClick={onSelectTerm}
+          selectionMode={selectionMode}
+          isChecked={checkedIds?.has(term.id)}
+          onCheckChange={onCheckChange}
         />
       ))}
     </div>

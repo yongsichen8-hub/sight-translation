@@ -70,6 +70,33 @@ export function createTermsRouter(termService: TermService): Router {
   });
 
   /**
+   * DELETE /api/terms/batch
+   * 批量删除术语
+   */
+  router.delete('/batch', async (req: Request, res: Response) => {
+    try {
+      const userId = DEFAULT_USER_ID;
+      const { ids } = req.body as { ids: string[] };
+
+      if (!Array.isArray(ids) || ids.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: { code: 'VALIDATION_ERROR', message: '请提供要删除的术语ID列表' },
+        });
+        return;
+      }
+
+      const deleted = await termService.deleteTermsBatch(userId, ids);
+      res.json({ success: true, data: { deleted } });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: { code: 'INTERNAL_ERROR', message: '批量删除术语失败' },
+      });
+    }
+  });
+
+  /**
    * GET /api/terms/:id
    * 获取术语详情
    */

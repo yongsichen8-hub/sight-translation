@@ -122,6 +122,13 @@ class BriefingApiClient {
   async deleteTerm(id: string): Promise<void> {
     await this.request(`/api/terms/${id}`, { method: 'DELETE' });
   }
+
+  async deleteTermsBatch(ids: string[]): Promise<{ deleted: number }> {
+    return this.request<{ deleted: number }>('/api/terms/batch', {
+      method: 'DELETE',
+      body: JSON.stringify({ ids }),
+    });
+  }
 }
 
 // 导出单例

@@ -101,4 +101,16 @@ export class TermService {
     file.terms.splice(index, 1);
     await this.saveTerms(userId, file);
   }
+
+  async deleteTermsBatch(userId: string, termIds: string[]): Promise<number> {
+    const file = await this.loadTerms(userId);
+    const before = file.terms.length;
+    file.terms = file.terms.filter((t) => !termIds.includes(t.id));
+    const deleted = before - file.terms.length;
+    if (deleted > 0) {
+      await this.saveTerms(userId, file);
+    }
+    return deleted;
+  }
+
 }
