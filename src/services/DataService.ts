@@ -521,6 +521,26 @@ export async function deleteExpression(id: string): Promise<void> {
 }
 
 /**
+ * 批量删除表达
+ */
+export async function deleteExpressionsBatch(ids: string[]): Promise<number> {
+  if (_isAuthenticated) {
+    const result = await apiClient.deleteExpressionsBatch(ids);
+    return result.deleted;
+  }
+
+  // 本地：逐个删除（含级联）
+  let deleted = 0;
+  for (const id of ids) {
+    try {
+      await deleteExpression(id);
+      deleted++;
+    } catch { /* skip not found */ }
+  }
+  return deleted;
+}
+
+/**
  * 导入表达（用于 Excel 导入，不需要 projectId）
  */
 export async function importExpression(data: { chinese: string; english: string; notes?: string }): Promise<Expression> {
@@ -688,6 +708,7 @@ export const dataService = {
   saveExpression,
   updateExpression,
   deleteExpression,
+  deleteExpressionsBatch,
   importExpression,
   // 闪卡
   getFlashcards,

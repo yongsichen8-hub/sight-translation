@@ -25,6 +25,11 @@ export function GlossaryManager(): React.ReactElement {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 批量选择状态
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [batchDeleting, setBatchDeleting] = useState(false);
   
   // AI 解释相关状态
   const [explainTarget, setExplainTarget] = useState<Expression | null>(null);
@@ -145,6 +150,47 @@ export function GlossaryManager(): React.ReactElement {
   const handleToastClose = useCallback(() => {
     setToast(null);
   }, []);
+
+  // 批量选择相关
+  const toggleSelectionMode = useCallback(() => {
+    setSelectionMode((prev) => {
+      if (prev) setCheckedIds(new Set());
+      return !prev;
+    });
+  }, []);
+
+  const handleCheckChange = useCallback((id: string, checked: boolean) => {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    if (checkedIds.size === filteredExpressions.length) {
+      setCheckedIds(new Set());
+    } else {
+      setCheckedIds(new Set(filteredExpressions.map((e) => e.id)));
+    }
+  }, [filteredExpressions, checkedIds.size]);
+
+  const handleBatchDelete = useCallback(async () => {
+    if (checkedIds.size === 0) return;
+    setBatchDeleting(true);
+    try {
+      await dataService.deleteExpressionsBatch(Array.from(checkedIds));
+      setExpressions((prev) => prev.filter((e) => !checkedIds.has(e.id)));
+      setToast({ message: `已删除 ${checkedIds.size} 条术语`, type: 'success' });
+      setCheckedIds(new Set());
+      setSelectionMode(false);
+    } catch (err) {
+      setToast({ message: '批量删除失败，请重试', type: 'error' });
+    } finally {
+      setBatchDeleting(false);
+    }
+  }, [checkedIds]);
 
   // 导出为 Excel
   const handleExport = useCallback(() => {
@@ -335,6 +381,14 @@ export function GlossaryManager(): React.ReactElement {
             onChange={handleFileChange}
           />
           <Button variant="ghost" onClick={goToFlashcards}>Flashcard 复习</Button>
+          {expressions.length > 0 && (
+            <Button
+              variant={selectionMode ? 'secondary' : 'ghost'}
+              onClick={toggleSelectionMode}
+            >
+              {selectionMode ? '取消管理' : '批量管理'}
+            </Button>
+          )}
           <Button variant="secondary" onClick={goToProjects}>返回项目</Button>
         </div>
       </div>
@@ -369,19 +423,54 @@ export function GlossaryManager(): React.ReactElement {
               <p className="glossary-manager__empty-text">没有找到匹配的术语</p>
             </div>
           ) : (
-            <div className="glossary-manager__table-wrapper">
-              <table className="glossary-manager__table">
-                <thead>
-                  <tr>
-                    <th>中文</th>
-                    <th>英文</th>
-                    <th>备注</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredExpressions.map((expr) => (
-                    <tr key={expr.id}>
+            <>
+              {selectionMode && (
+                <div className="glossary-manager__batch-bar">
+                  <label className="glossary-manager__select-all-label">
+                    <input
+                      type="checkbox"
+                      checked={filteredExpressions.length > 0 && checkedIds.size === filteredExpressions.length}
+                      onChange={handleSelectAll}
+                    />
+                    <span>全选</span>
+                  </label>
+                  <span className="glossary-manager__batch-info">
+                    已选 {checkedIds.size} / {filteredExpressions.length}
+                  </span>
+                  <button
+                    className="glossary-manager__batch-delete-btn"
+                    onClick={handleBatchDelete}
+                    disabled={checkedIds.size === 0 || batchDeleting}
+                    type="button"
+                  >
+                    {batchDeleting ? '删除中...' : `删除选中 (${checkedIds.size})`}
+                  </button>
+                </div>
+              )}
+              <div className="glossary-manager__table-wrapper">
+                <table className="glossary-manager__table">
+                  <thead>
+                    <tr>
+                      {selectionMode && <th style={{ width: 40 }}></th>}
+                      <th>中文</th>
+                      <th>英文</th>
+                      <th>备注</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredExpressions.map((expr) => (
+                      <tr key={expr.id}>
+                        {selectionMode && (
+                          <td>
+                            <input
+                              type="checkbox"
+                              className="glossary-manager__row-checkbox"
+                              checked={checkedIds.has(expr.id)}
+                              onChange={(e) => handleCheckChange(expr.id, e.target.checked)}
+                            />
+                          </td>
+                        )}
                       {editingId === expr.id ? (
                         <>
                           <td>
@@ -431,6 +520,7 @@ export function GlossaryManager(): React.ReactElement {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </>
       )}

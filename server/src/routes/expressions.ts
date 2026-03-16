@@ -147,6 +147,32 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 /**
+ * DELETE /api/expressions/batch
+ * 批量删除表达
+ */
+router.delete('/batch', async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body as { ids: string[] };
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: '请提供要删除的表达ID列表' },
+      });
+      return;
+    }
+
+    const deleted = await dataService.deleteExpressionsBatch(req.user!.feishuUserId, ids);
+    res.json({ success: true, data: { deleted } });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: '批量删除失败' },
+    });
+  }
+});
+
+/**
  * DELETE /api/expressions/:id
  * 删除表达
  */

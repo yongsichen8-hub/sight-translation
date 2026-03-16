@@ -240,6 +240,13 @@ class ApiClient {
     await this.request(`/api/expressions/${id}`, { method: 'DELETE' });
   }
 
+  async deleteExpressionsBatch(ids: string[]): Promise<{ deleted: number }> {
+    return this.request<{ deleted: number }>('/api/expressions/batch', {
+      method: 'DELETE',
+      body: JSON.stringify({ ids }),
+    });
+  }
+
   // ==================== 闪卡相关 ====================
 
   async getFlashcards(): Promise<Flashcard[]> {

@@ -292,6 +292,25 @@ export class DataService {
     await this.deleteFlashcardsByExpression(userId, expressionId);
   }
 
+  /**
+   * 批量删除表达
+   */
+  async deleteExpressionsBatch(userId: string, ids: string[]): Promise<number> {
+    const data = await fileStorageService.readJson<ExpressionsFile>(userId, 'expressions.json');
+    const before = data.expressions.length;
+    const idsSet = new Set(ids);
+    data.expressions = data.expressions.filter(e => !idsSet.has(e.id));
+    const deleted = before - data.expressions.length;
+    if (deleted > 0) {
+      await fileStorageService.writeJson(userId, 'expressions.json', data);
+      // 级联删除相关闪卡
+      for (const id of ids) {
+        await this.deleteFlashcardsByExpression(userId, id);
+      }
+    }
+    return deleted;
+  }
+
 
   // ==================== 闪卡管理 ====================
 
