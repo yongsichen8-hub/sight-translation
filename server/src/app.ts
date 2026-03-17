@@ -39,6 +39,9 @@ app.use(cors({
   credentials: config.cors.credentials,
 }));
 
+// 信任 nginx 反向代理（解决 express-rate-limit X-Forwarded-For 报错）
+app.set('trust proxy', 1);
+
 // 请求频率限制
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
