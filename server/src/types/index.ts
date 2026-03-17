@@ -1,7 +1,9 @@
 // User types
 export interface User {
   id: string;
-  feishuUserId: string;
+  username: string;
+  passwordHash: string;
+  feishuUserId: string;  // 保留用于数据目录关联
   name: string;
   avatar: string;
   createdAt: string;
@@ -120,6 +122,7 @@ export interface TokenPair {
 export interface JWTPayload {
   userId: string;
   feishuUserId: string;
+  username: string;
   name: string;
   iat: number;
   exp: number;

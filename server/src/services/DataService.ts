@@ -38,6 +38,8 @@ export class DataService {
 
     const user: User = {
       id: uuidv4(),
+      username: feishuUser.name,
+      passwordHash: '',
       feishuUserId: userId,
       name: feishuUser.name,
       avatar: feishuUser.avatar_url,

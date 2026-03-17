@@ -1,238 +1,186 @@
-import * as crypto from 'crypto';
+import * as bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
-import { 
-  User, 
-  FeishuUserInfo, 
-  FeishuTokenResponse, 
-  AuthResult, 
-  JWTPayload 
-} from '../types';
+import { User, AuthResult, JWTPayload } from '../types';
 import { fileStorageService } from './FileStorageService';
 import { v4 as uuidv4 } from 'uuid';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
-// 存储 state 参数（生产环境应使用 Redis）
-const stateStore = new Map<string, { createdAt: number; redirectUri: string }>();
-const STATE_EXPIRY_MS = 10 * 60 * 1000; // 10 分钟
+const SALT_ROUNDS = 10;
 
 /**
- * 认证服务 - 处理飞书 OAuth 和 JWT
+ * 用户索引文件：username -> feishuUserId (数据目录名)
+ * 存储在 dataDir/users-index.json
+ */
+interface UsersIndex {
+  [username: string]: string; // username -> dataDir userId (feishuUserId)
+}
+
+/**
+ * 认证服务 - 用户名密码登录 + JWT
  */
 export class AuthService {
-  /**
-   * 生成飞书 OAuth 授权 URL
-   */
-  getAuthorizationUrl(redirectUri: string): { url: string; state: string } {
-    // 生成随机 state 参数
-    const state = crypto.randomBytes(32).toString('hex');
-    
-    // 存储 state
-    stateStore.set(state, { 
-      createdAt: Date.now(), 
-      redirectUri 
-    });
-    
-    // 清理过期的 state
-    this.cleanupExpiredStates();
-    
-    // 构建授权 URL
-    const params = new URLSearchParams({
-      app_id: config.feishu.appId,
-      redirect_uri: redirectUri,
-      state,
-    });
-    
-    const url = `https://open.feishu.cn/open-apis/authen/v1/authorize?${params.toString()}`;
-    
-    return { url, state };
+  private indexPath: string;
+
+  constructor() {
+    this.indexPath = path.join(config.dataDir, 'users-index.json');
   }
 
   /**
-   * 清理过期的 state
+   * 读取用户索引
    */
-  private cleanupExpiredStates(): void {
-    const now = Date.now();
-    for (const [state, data] of stateStore.entries()) {
-      if (now - data.createdAt > STATE_EXPIRY_MS) {
-        stateStore.delete(state);
-      }
+  private async readIndex(): Promise<UsersIndex> {
+    try {
+      const content = await fs.readFile(this.indexPath, 'utf-8');
+      return JSON.parse(content) as UsersIndex;
+    } catch {
+      return {};
     }
   }
 
   /**
-   * 验证 state 参数
+   * 写入用户索引
    */
-  validateState(state: string): boolean {
-    const data = stateStore.get(state);
-    if (!data) {
-      return false;
-    }
-    
-    // 检查是否过期
-    if (Date.now() - data.createdAt > STATE_EXPIRY_MS) {
-      stateStore.delete(state);
-      return false;
-    }
-    
-    // 使用后删除
-    stateStore.delete(state);
-    return true;
-  }
-
-
-  /**
-   * 处理 OAuth 回调
-   */
-  async handleCallback(code: string, state: string): Promise<AuthResult> {
-    // 验证 state
-    if (!this.validateState(state)) {
-      throw new Error('STATE_MISMATCH: state 参数无效或已过期');
-    }
-    
-    // 用授权码换取 access_token
-    const tokenResponse = await this.exchangeToken(code);
-    
-    // 获取用户信息
-    const feishuUser = await this.getUserInfo(tokenResponse.access_token);
-    
-    // 创建或更新用户
-    const user = await this.findOrCreateUser(feishuUser);
-    
-    // 生成 JWT
-    const jwtToken = this.generateToken(user);
-    
-    return {
-      user,
-      jwt: jwtToken,
-      expiresIn: 7 * 24 * 60 * 60, // 7 天（秒）
-    };
+  private async writeIndex(index: UsersIndex): Promise<void> {
+    await fs.mkdir(path.dirname(this.indexPath), { recursive: true });
+    await fs.writeFile(this.indexPath, JSON.stringify(index, null, 2), 'utf-8');
   }
 
   /**
-   * 用授权码换取 access_token
+   * 注册新用户
    */
-  async exchangeToken(code: string): Promise<FeishuTokenResponse> {
-    // 先获取 app_access_token
-    const appTokenResponse = await fetch(
-      'https://open.feishu.cn/open-apis/auth/v3/app_access_token/internal',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          app_id: config.feishu.appId,
-          app_secret: config.feishu.appSecret,
-        }),
-      }
-    );
-    
-    const appTokenData = await appTokenResponse.json() as { 
-      code: number; 
-      msg: string; 
-      app_access_token: string 
-    };
-    
-    if (appTokenData.code !== 0) {
-      throw new Error(`FEISHU_API_ERROR: 获取 app_access_token 失败 - ${appTokenData.msg}`);
+  async register(username: string, password: string): Promise<AuthResult> {
+    if (!username || username.trim().length < 2 || username.trim().length > 30) {
+      throw new Error('VALIDATION_ERROR: 用户名长度必须为 2-30 个字符');
     }
-    
-    // 用授权码换取 user_access_token
-    const response = await fetch(
-      'https://open.feishu.cn/open-apis/authen/v1/oidc/access_token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${appTokenData.app_access_token}`,
-        },
-        body: JSON.stringify({
-          grant_type: 'authorization_code',
-          code,
-        }),
-      }
-    );
-    
-    const data = await response.json() as { 
-      code: number; 
-      msg: string; 
-      data: FeishuTokenResponse 
-    };
-    
-    if (data.code !== 0) {
-      if (data.msg.includes('expired') || data.msg.includes('invalid')) {
-        throw new Error('AUTH_CODE_INVALID: 授权码无效或已过期');
-      }
-      throw new Error(`FEISHU_API_ERROR: 换取 token 失败 - ${data.msg}`);
+    if (!password || password.length < 6 || password.length > 50) {
+      throw new Error('VALIDATION_ERROR: 密码长度必须为 6-50 个字符');
     }
-    
-    return data.data;
-  }
 
-  /**
-   * 获取飞书用户信息
-   */
-  async getUserInfo(accessToken: string): Promise<FeishuUserInfo> {
-    const response = await fetch(
-      'https://open.feishu.cn/open-apis/authen/v1/user_info',
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      }
-    );
-    
-    const data = await response.json() as { 
-      code: number; 
-      msg: string; 
-      data: FeishuUserInfo 
-    };
-    
-    if (data.code !== 0) {
-      throw new Error(`FEISHU_API_ERROR: 获取用户信息失败 - ${data.msg}`);
+    const trimmedUsername = username.trim();
+    const index = await this.readIndex();
+
+    if (index[trimmedUsername]) {
+      throw new Error('DUPLICATE_USER: 用户名已存在');
     }
-    
-    return data.data;
-  }
 
-
-  /**
-   * 查找或创建用户
-   */
-  async findOrCreateUser(feishuUser: FeishuUserInfo): Promise<User> {
-    const userId = feishuUser.union_id || feishuUser.open_id;
-    
-    // 确保用户目录存在
-    await fileStorageService.ensureUserDir(userId);
-    
-    // 尝试读取现有用户
-    const existingUser = await fileStorageService.readJson<User | null>(userId, 'user.json');
-    
+    // 生成数据目录 ID（保持与原飞书用户目录兼容的格式）
+    const dataDirId = uuidv4();
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const now = new Date().toISOString();
-    
-    if (existingUser) {
-      // 更新用户信息
-      const updatedUser: User = {
-        ...existingUser,
-        name: feishuUser.name,
-        avatar: feishuUser.avatar_url,
-        updatedAt: now,
-      };
-      await fileStorageService.writeJson(userId, 'user.json', updatedUser);
-      return updatedUser;
-    }
-    
-    // 创建新用户
-    const newUser: User = {
+
+    const user: User = {
       id: uuidv4(),
-      feishuUserId: userId,
-      name: feishuUser.name,
-      avatar: feishuUser.avatar_url,
+      username: trimmedUsername,
+      passwordHash,
+      feishuUserId: dataDirId,
+      name: trimmedUsername,
+      avatar: '',
       createdAt: now,
       updatedAt: now,
     };
-    
-    await fileStorageService.writeJson(userId, 'user.json', newUser);
-    return newUser;
+
+    // 创建用户数据目录和文件
+    await fileStorageService.ensureUserDir(dataDirId);
+    await fileStorageService.writeJson(dataDirId, 'user.json', user);
+
+    // 更新索引
+    index[trimmedUsername] = dataDirId;
+    await this.writeIndex(index);
+
+    const jwtToken = this.generateToken(user);
+
+    return {
+      user,
+      jwt: jwtToken,
+      expiresIn: 7 * 24 * 60 * 60,
+    };
+  }
+
+  /**
+   * 用户名密码登录
+   */
+  async login(username: string, password: string): Promise<AuthResult> {
+    if (!username || !password) {
+      throw new Error('VALIDATION_ERROR: 请输入用户名和密码');
+    }
+
+    const trimmedUsername = username.trim();
+    const index = await this.readIndex();
+    const dataDirId = index[trimmedUsername];
+
+    if (!dataDirId) {
+      throw new Error('AUTH_FAILED: 用户名或密码错误');
+    }
+
+    const user = await fileStorageService.readJson<User | null>(dataDirId, 'user.json');
+    if (!user) {
+      throw new Error('AUTH_FAILED: 用户名或密码错误');
+    }
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      throw new Error('AUTH_FAILED: 用户名或密码错误');
+    }
+
+    const jwtToken = this.generateToken(user);
+
+    return {
+      user,
+      jwt: jwtToken,
+      expiresIn: 7 * 24 * 60 * 60,
+    };
+  }
+
+  /**
+   * 迁移飞书用户：将现有飞书用户目录关联到新的用户名
+   */
+  async migrateFeishuUser(feishuUserId: string, username: string, password: string): Promise<AuthResult> {
+    if (!username || username.trim().length < 2) {
+      throw new Error('VALIDATION_ERROR: 用户名长度必须为 2-30 个字符');
+    }
+    if (!password || password.length < 6) {
+      throw new Error('VALIDATION_ERROR: 密码长度必须为 6-50 个字符');
+    }
+
+    const trimmedUsername = username.trim();
+    const index = await this.readIndex();
+
+    if (index[trimmedUsername]) {
+      throw new Error('DUPLICATE_USER: 用户名已存在');
+    }
+
+    // 检查飞书用户目录是否存在
+    const existingUser = await fileStorageService.readJson<User | null>(feishuUserId, 'user.json');
+    if (!existingUser) {
+      throw new Error('NOT_FOUND: 飞书用户数据不存在');
+    }
+
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    const now = new Date().toISOString();
+
+    // 更新用户信息，保留原有数据目录
+    const updatedUser: User = {
+      ...existingUser,
+      username: trimmedUsername,
+      passwordHash,
+      updatedAt: now,
+    };
+
+    await fileStorageService.writeJson(feishuUserId, 'user.json', updatedUser);
+
+    // 更新索引
+    index[trimmedUsername] = feishuUserId;
+    await this.writeIndex(index);
+
+    const jwtToken = this.generateToken(updatedUser);
+
+    return {
+      user: updatedUser,
+      jwt: jwtToken,
+      expiresIn: 7 * 24 * 60 * 60,
+    };
   }
 
   /**
@@ -242,14 +190,12 @@ export class AuthService {
     const payload: Omit<JWTPayload, 'iat' | 'exp'> = {
       userId: user.id,
       feishuUserId: user.feishuUserId,
+      username: user.username || user.name,
       name: user.name,
     };
-    
-    // 7 天过期时间（秒）
-    const expiresInSeconds = 7 * 24 * 60 * 60;
-    
+
     return jwt.sign(payload, config.jwt.secret, {
-      expiresIn: expiresInSeconds,
+      expiresIn: 7 * 24 * 60 * 60,
     });
   }
 
@@ -269,25 +215,6 @@ export class AuthService {
       }
       throw error;
     }
-  }
-
-  /**
-   * 刷新 JWT 令牌
-   */
-  async refreshToken(token: string): Promise<string> {
-    const payload = this.verifyToken(token);
-    
-    // 读取用户信息
-    const user = await fileStorageService.readJson<User | null>(
-      payload.feishuUserId, 
-      'user.json'
-    );
-    
-    if (!user) {
-      throw new Error('TOKEN_INVALID: 用户不存在');
-    }
-    
-    return this.generateToken(user);
   }
 }
 

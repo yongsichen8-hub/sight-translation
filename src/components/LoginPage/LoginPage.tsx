@@ -1,9 +1,63 @@
-import React from 'react';
+import React, { useState, FormEvent } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './LoginPage.css';
 
+type AuthMode = 'login' | 'register';
+
 export const LoginPage: React.FC = () => {
-  const { login, isLoading } = useAuth();
+  const { login, register, isLoading, authError, clearError } = useAuth();
+  const [mode, setMode] = useState<AuthMode>('login');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [localError, setLocalError] = useState('');
+
+  const switchMode = (newMode: AuthMode) => {
+    setMode(newMode);
+    setLocalError('');
+    clearError();
+    setUsername('');
+    setPassword('');
+    setConfirmPassword('');
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setLocalError('');
+    clearError();
+
+    if (!username.trim() || !password) {
+      setLocalError('请输入用户名和密码');
+      return;
+    }
+
+    if (mode === 'register') {
+      if (username.trim().length < 2 || username.trim().length > 30) {
+        setLocalError('用户名长度必须为 2-30 个字符');
+        return;
+      }
+      if (password.length < 6) {
+        setLocalError('密码长度至少 6 个字符');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setLocalError('两次密码输入不一致');
+        return;
+      }
+    }
+
+    try {
+      if (mode === 'login') {
+        await login(username.trim(), password);
+      } else {
+        await register(username.trim(), password);
+      }
+    } catch {
+      // error is handled by AuthContext
+    }
+  };
+
+  const displayError = localError || authError;
 
   return (
     <div className="login-page">
@@ -12,32 +66,93 @@ export const LoginPage: React.FC = () => {
           <h1>视译练习平台</h1>
           <p>Sight Translation Trainer</p>
         </div>
-        
-        <div className="login-content">
-          <p className="login-description">
-            使用飞书账号登录，开始您的视译练习之旅
-          </p>
-          
-          <button 
-            className="feishu-login-btn"
-            onClick={login}
-            disabled={isLoading}
+
+        <div className="login-tabs">
+          <button
+            className={`login-tab ${mode === 'login' ? 'login-tab--active' : ''}`}
+            onClick={() => switchMode('login')}
+            type="button"
           >
-            {isLoading ? (
-              <span>登录中...</span>
-            ) : (
-              <>
-                <svg className="feishu-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                </svg>
-                <span>飞书登录</span>
-              </>
-            )}
+            登录
+          </button>
+          <button
+            className={`login-tab ${mode === 'register' ? 'login-tab--active' : ''}`}
+            onClick={() => switchMode('register')}
+            type="button"
+          >
+            注册
           </button>
         </div>
-        
+
+        <form className="login-form" onSubmit={handleSubmit}>
+          <div className="login-field">
+            <label htmlFor="username">用户名</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={mode === 'register' ? '2-30 个字符' : '请输入用户名'}
+              autoComplete="username"
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="login-field">
+            <label htmlFor="password">密码</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={mode === 'register' ? '至少 6 个字符' : '请输入密码'}
+              autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          {mode === 'register' && (
+            <div className="login-field">
+              <label htmlFor="confirmPassword">确认密码</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="再次输入密码"
+                autoComplete="new-password"
+                required
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
+          {displayError && (
+            <p className="login-error" role="alert">{displayError}</p>
+          )}
+
+          <button
+            type="submit"
+            className="login-submit-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? '处理中...' : mode === 'login' ? '登录' : '注册'}
+          </button>
+        </form>
+
         <div className="login-footer">
-          <p>登录即表示您同意我们的服务条款</p>
+          <p>
+            {mode === 'login' ? '还没有账号？' : '已有账号？'}
+            <button
+              className="login-switch-btn"
+              onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
+              type="button"
+            >
+              {mode === 'login' ? '去注册' : '去登录'}
+            </button>
+          </p>
         </div>
       </div>
     </div>

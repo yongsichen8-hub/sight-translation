@@ -9,7 +9,7 @@ import { FlashcardReview } from './components/FlashcardReview';
 import { NotebookListPage } from './components/Notebook/NotebookListPage';
 import { NotebookWorkspace } from './components/Notebook/NotebookWorkspace';
 import { UserMenu } from './components/UserMenu/UserMenu';
-import { MigrationDialog } from './components/MigrationDialog/MigrationDialog';
+import { LoginPage } from './components/LoginPage';
 import { Toast, Button } from './components/common';
 import { initializeDatabase } from './db';
 import './App.css';
@@ -20,7 +20,6 @@ import './App.css';
 function AppNav() {
   const { currentView } = useAppState();
   const { goToProjects, goToGlossary, goToFlashcards, goToNotebooks } = useAppActions();
-  const { isAuthenticated, login } = useAuth();
 
   return (
     <nav className="app-nav">
@@ -54,13 +53,7 @@ function AppNav() {
         </button>
       </div>
       <div className="app-nav__user">
-        {isAuthenticated ? (
-          <UserMenu />
-        ) : (
-          <button className="app-nav__login-btn" onClick={login}>
-            飞书登录
-          </button>
-        )}
+        <UserMenu />
       </div>
     </nav>
   );
@@ -72,7 +65,6 @@ function AppNav() {
 function AppContent() {
   const { currentView, dataLoadStatus, error } = useAppState();
   const { setDataLoadStatus, setError, useEmptyData, retryDataLoad } = useAppActions();
-  const { isFirstLogin, setFirstLoginComplete } = useAuth();
 
   const initializeDb = useCallback(async () => {
     try {
@@ -155,11 +147,6 @@ function AppContent() {
   return (
     <>
       <main className="app-main">{renderView()}</main>
-      <MigrationDialog
-        visible={isFirstLogin}
-        onClose={setFirstLoginComplete}
-        onComplete={setFirstLoginComplete}
-      />
     </>
   );
 }
@@ -192,13 +179,36 @@ function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <div className="app">
-          <AppNav />
-          <AppContent />
-          <GlobalToast />
-        </div>
+        <AppInner />
       </AppProvider>
     </AuthProvider>
+  );
+}
+
+function AppInner() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="app">
+        <div className="app-loading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+          <div className="app-loading__spinner" />
+          <p className="app-loading__text">正在检查登录状态...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  return (
+    <div className="app">
+      <AppNav />
+      <AppContent />
+      <GlobalToast />
+    </div>
   );
 }
 

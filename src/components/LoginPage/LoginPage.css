@@ -17,6 +17,10 @@
   text-align: center;
 }
 
+.login-header {
+  margin-bottom: 24px;
+}
+
 .login-header h1 {
   margin: 0 0 8px 0;
   font-size: 28px;
@@ -29,55 +33,123 @@
   font-size: 14px;
 }
 
-.login-content {
-  margin: 40px 0;
-}
-
-.login-description {
-  color: #666;
+.login-tabs {
+  display: flex;
+  gap: 0;
   margin-bottom: 24px;
-  line-height: 1.6;
+  border-bottom: 2px solid #eee;
 }
 
-.feishu-login-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 32px;
+.login-tab {
+  flex: 1;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.login-tab--active {
+  color: #3370ff;
+  border-bottom-color: #3370ff;
+  font-weight: 500;
+}
+
+.login-form {
+  text-align: left;
+}
+
+.login-field {
+  margin-bottom: 16px;
+}
+
+.login-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.login-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.login-field input:focus {
+  outline: none;
+  border-color: #3370ff;
+  box-shadow: 0 0 0 3px rgba(51, 112, 255, 0.1);
+}
+
+.login-field input:disabled {
+  background: #f5f5f5;
+}
+
+.login-error {
+  color: #e53e3e;
+  font-size: 13px;
+  margin: 0 0 12px 0;
+  padding: 8px 12px;
+  background: #fff5f5;
+  border-radius: 6px;
+  border: 1px solid #fed7d7;
+}
+
+.login-submit-btn {
+  width: 100%;
+  padding: 12px;
   background: #3370ff;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 100%;
+  margin-top: 8px;
 }
 
-.feishu-login-btn:hover:not(:disabled) {
+.login-submit-btn:hover:not(:disabled) {
   background: #2860e0;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(51, 112, 255, 0.4);
 }
 
-.feishu-login-btn:disabled {
+.login-submit-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.feishu-icon {
-  width: 20px;
-  height: 20px;
-}
-
 .login-footer {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 .login-footer p {
   color: #999;
-  font-size: 12px;
+  font-size: 13px;
   margin: 0;
+}
+
+.login-switch-btn {
+  background: none;
+  border: none;
+  color: #3370ff;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.login-switch-btn:hover {
+  text-decoration: underline;
 }

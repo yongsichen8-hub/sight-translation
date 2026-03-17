@@ -18,6 +18,7 @@ const API_BASE_URL = getApiBaseUrl();
 export interface AuthUser {
   userId: string;
   feishuUserId: string;
+  username: string;
   name: string;
   avatar?: string;
 }
@@ -157,15 +158,19 @@ class ApiClient {
 
   // ==================== 认证相关 ====================
 
-  async getLoginUrl(): Promise<string> {
-    const data = await this.request<{ url: string }>('/api/auth/feishu/login');
-    return data.url;
+  async register(username: string, password: string): Promise<AuthUser> {
+    const data = await this.request<{ user: AuthUser }>('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+    return data.user;
   }
 
-  async handleCallback(code: string, state: string): Promise<AuthUser> {
-    const data = await this.request<{ user: AuthUser }>(
-      `/api/auth/feishu/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`
-    );
+  async login(username: string, password: string): Promise<AuthUser> {
+    const data = await this.request<{ user: AuthUser }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
     return data.user;
   }
 
@@ -179,6 +184,14 @@ class ApiClient {
 
   async logout(): Promise<void> {
     await this.request('/api/auth/logout', { method: 'POST' });
+  }
+
+  async migrateFeishuUser(feishuUserId: string, username: string, password: string): Promise<AuthUser> {
+    const data = await this.request<{ user: AuthUser }>('/api/auth/migrate-feishu', {
+      method: 'POST',
+      body: JSON.stringify({ feishuUserId, username, password }),
+    });
+    return data.user;
   }
 
 

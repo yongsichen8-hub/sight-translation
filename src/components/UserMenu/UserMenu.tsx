@@ -55,7 +55,7 @@ export const UserMenu: React.FC = () => {
         <div className="user-menu-dropdown">
           <div className="user-menu-header">
             <span className="user-menu-name">{user.name}</span>
-            <span className="user-menu-id">ID: {user.feishuUserId.slice(0, 8)}...</span>
+            <span className="user-menu-id">@{user.username}</span>
           </div>
           <div className="user-menu-divider" />
           <button className="user-menu-item logout" onClick={handleLogout}>
