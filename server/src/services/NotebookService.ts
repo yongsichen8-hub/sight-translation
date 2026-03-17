@@ -283,11 +283,8 @@ export class NotebookService {
 备忘录内容：
 ${text}${urlSection}`;
 
-    // 5. 调用 OpenAI 兼容 API（120 秒超时）
+    // 5. 调用 OpenAI 兼容 API（不设硬性超时，等待 AI 自然返回）
     const apiUrl = `${aiSettings.baseUrl.replace(/\/+$/, '')}/chat/completions`;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120_000);
 
     try {
       const response = await fetch(apiUrl, {
@@ -304,7 +301,6 @@ ${text}${urlSection}`;
           ],
           temperature: 0.3,
         }),
-        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -342,12 +338,7 @@ ${text}${urlSection}`;
 
       return result;
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        throw new Error('AI_TIMEOUT: AI 整理请求超时（120 秒），请稍后重试');
-      }
       throw err;
-    } finally {
-      clearTimeout(timeoutId);
     }
   }
 
@@ -398,11 +389,8 @@ ${text}${urlSection}`;
 文本内容：
 ${text}`;
 
-    // 5. 调用 OpenAI 兼容 API（120 秒超时）
+    // 5. 调用 OpenAI 兼容 API（不设硬性超时，等待 AI 自然返回）
     const apiUrl = `${aiSettings.baseUrl.replace(/\/+$/, '')}/chat/completions`;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120_000);
 
     try {
       const response = await fetch(apiUrl, {
@@ -419,7 +407,6 @@ ${text}`;
           ],
           temperature: 0.1,
         }),
-        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -457,16 +444,11 @@ ${text}`;
 
       return expressions;
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        throw new Error('AI_TIMEOUT: 双语表达识别请求超时（120 秒），请稍后重试');
-      }
       // Re-throw JSON parse errors with a friendlier message
       if (err instanceof SyntaxError) {
         throw new Error('AI_API_ERROR: AI 返回的内容无法解析为有效的 JSON 格式');
       }
       throw err;
-    } finally {
-      clearTimeout(timeoutId);
     }
   }
 }
